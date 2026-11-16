@@ -17,6 +17,11 @@ const ok=(n,c,x)=>console.log((c?"PASS":"FAIL")+"  "+n+(x?"  "+x:""));
   await p.click('#proClose');
   await p.evaluate(()=>{ UL.newGame(); [...document.querySelectorAll('#lvlList .lvl')].find(x=>x.textContent.includes('Classic')).click(); });
   await p.waitForTimeout(300);
+  ok("first game shows the swipe hint", await p.evaluate(()=>!!document.querySelector('.tw-hint')));
+  await p.evaluate(()=>{ for(const d of ["left","up","right","down"]) GAME.move(d); });
+  ok("first move removes the hint for good", await p.evaluate(()=>!document.querySelector('.tw-hint') && UL.kv("moved",false)===true));
+  await p.evaluate(()=>{ UL.cur.sec=0; UL.restart(); }); await p.waitForTimeout(200);
+  ok("no hint once the player has moved", await p.evaluate(()=>!document.querySelector('.tw-hint')));
   ok("classic starts with two tiles", await p.evaluate(()=>GAME.st.cells.filter(Boolean).length===2 && document.querySelectorAll('.tw-tile').length===2));
 
   // play a fixed sequence, remember the board, restart, replay: must be identical
@@ -48,6 +53,11 @@ const ok=(n,c,x)=>console.log((c?"PASS":"FAIL")+"  "+n+(x?"  "+x:""));
   const box = await p.locator('#stage').boundingBox();
   for(const [dx,dy] of [[-140,0],[0,-140],[140,0],[0,140]]){ await p.mouse.move(box.x+box.width/2, box.y+box.height/2); await p.mouse.down(); await p.mouse.move(box.x+box.width/2+dx, box.y+box.height/2+dy,{steps:4}); await p.mouse.up(); await p.waitForTimeout(140); }
   ok("swipes register as moves", await p.evaluate((m)=>GAME.st.moves>m, mv0));
+  const mv1 = await p.evaluate(()=>GAME.st.moves);
+  for(const [fx,fy] of [[.06,.5],[.5,.06],[.94,.5],[.5,.94]]){ await p.mouse.click(box.x+box.width*fx, box.y+box.height*fy); await p.waitForTimeout(220); }
+  const mv2 = await p.evaluate(()=>GAME.st.moves);
+  await p.mouse.click(box.x+box.width/2, box.y+box.height/2); await p.waitForTimeout(220);
+  ok("taps near an edge move the tiles, a tap in the middle does not", mv2>mv1 && await p.evaluate((m)=>GAME.st.moves===m, mv2), (mv2-mv1)+" of 4 taps moved");
   await p.screenshot({path:require('path').resolve(__dirname,'../out')+'/twos-play.png'});
 
   // play to the end

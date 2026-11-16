@@ -5,7 +5,7 @@ const GAME = {
   title: ["TW","OS"],
   icon: "🔢",
   version: "1.1",
-  changelog: [["1.1","Brighter tiles: every number has its own colour and a little face, and big tiles wear a crown."],["1.0","First release: Tiny, Classic, Wide and Grand boards, a Daily, undo."]],
+  changelog: [["1.1","Brighter tiles with little faces and crowns, calmer sliding, a swipe hint on your first game, and tap near an edge to move."],["1.0","First release: Tiny, Classic, Wide and Grand boards, a Daily, undo."]],
   blurb: "Swipe to slide. Matching tiles merge and double.",
   timer: false,
   daily: "classic",
@@ -17,7 +17,7 @@ const GAME = {
   ],
   proPerks: ["Wide 5×5 and Grand 6×6 boards","Unlimited undo","Three extra themes","Score chart and level breakdown"],
   tutorial: [
-    {icon:"👆", title:"Swipe to slide", body:"Swipe up, down, left or right. Every tile slides as far as it can, and a new tile appears."},
+    {icon:"👆", title:"Swipe to slide", body:"Swipe up, down, left or right, or tap near that edge of the board. Every tile slides as far as it can, then a new tile appears."},
     {icon:"🔢", title:"Match to merge", body:"Two tiles with the same number merge into one worth double. Merges are your score."},
     {icon:"🎯", title:"Reach the target", body:"Each board has a target tile — 2048 on Classic. Reach it to win, then keep going for a higher score."},
     {icon:"↩️", title:"Undo", body:"A bad swipe can be taken back. You get two undos a game; Pro makes them unlimited."}
@@ -36,6 +36,11 @@ const GAME = {
     if(!restore){ this.spawn(); this.spawn(); }
     this.undoBtn = UL.ctrl({icon:"undo", label:"Undo", onTap:()=>this.undoMove()});
     this.bind(stage); this.render(); this.hud();
+    if(!UL.kv("moved", false) && !st.moves){          // first ever game: show how to play until the first move
+      const h = this.hint = document.createElement("div"); h.className = "tw-hint";
+      h.innerHTML = '<b>Swipe!</b><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6v52M6 32h52M32 6l-8 8M32 6l8 8M32 58l-8-8M32 58l8-8M6 32l8-8M6 32l8 8M58 32l-8-8M58 32l-8 8"/></svg>Slide all the tiles,<br>or tap near an edge.';
+      b.appendChild(h);
+    }
   },
   xy(i){ const n = this.st.n, c = i%n, r = Math.floor(i/n); return "translate(calc("+c+" * (100% + var(--g))), calc("+r+" * (100% + var(--g))))"; },
   freeze(){ const s = this.st; return {n:s.n, target:s.target, cells:s.cells.map(t=>t?[t.id,t.v]:0), nextId:s.nextId, moves:s.moves, best:s.best,
@@ -55,7 +60,7 @@ const GAME = {
     const f = document.createElement("div"); f.className = "tw-face k"+k; f.style.setProperty("--w", w.toFixed(1)+"px");
     const eyes = document.createElement("i"); eyes.className = "tw-eyes"; const num = document.createElement("span"); num.textContent = t.v;
     f.append(eyes, num);
-    f.style.fontSize = Math.round(w*(d<=2?0.40:d===3?0.32:d===4?0.25:0.2))+"px";
+    f.style.fontSize = Math.round(w*(d<=2?0.36:d===3?0.30:d===4?0.23:0.19))+"px";
     return f;
   },
   render(ghosts){
@@ -64,11 +69,11 @@ const GAME = {
       if(!t) return; live.add(t.id);
       let el = this.els.get(t.id);
       if(!el){ el = document.createElement("div"); el.className = "tw-tile"; el.style.transform = this.xy(i); el.appendChild(this.face(t)); el.dataset.v = t.v;
-        this.board.appendChild(el); this.els.set(t.id, el); if(t.fresh){ UL.pop(el.firstChild); t.fresh = false; } }
+        this.board.appendChild(el); this.els.set(t.id, el); if(t.fresh){ el.firstChild.classList.add("tw-new"); t.fresh = false; } }
       else { el.style.transform = this.xy(i);
-        if(+el.dataset.v !== t.v){ el.dataset.v = t.v; const f = this.face(t); f.classList.add("happy"); el.replaceChild(f, el.firstChild); UL.pop(f); setTimeout(()=>f.classList.remove("happy"), 450); } }
+        if(+el.dataset.v !== t.v){ el.dataset.v = t.v; const f = this.face(t); f.classList.add("happy"); el.replaceChild(f, el.firstChild); setTimeout(()=>UL.pop(f), 150); setTimeout(()=>f.classList.remove("happy"), 500); } }
     });
-    (ghosts||[]).forEach(g=>{ const el = this.els.get(g.id); if(!el) return; el.classList.add("ghost"); el.style.transform = this.xy(g.to); this.els.delete(g.id); setTimeout(()=>el.remove(), 120); });
+    (ghosts||[]).forEach(g=>{ const el = this.els.get(g.id); if(!el) return; el.classList.add("ghost"); el.style.transform = this.xy(g.to); this.els.delete(g.id); setTimeout(()=>el.remove(), 190); });
     for(const [id, el] of this.els){ if(!live.has(id)){ el.remove(); this.els.delete(id); } }
   },
   hud(){
@@ -101,6 +106,7 @@ const GAME = {
         else { next[line[w]] = t; if(line[w] !== idx) moved = true; last = t; w++; } }
     }
     if(!moved){ UL.shake(this.board); return; }
+    if(this.hint){ this.hint.remove(); this.hint = null; UL.setKv("moved", true); }
     merged.forEach(t=>{ delete t.justMerged; });
     s.cells = next; s.moves++;
     s.undo.push(before); if(s.undo.length > 30) s.undo.shift();
@@ -129,7 +135,12 @@ const GAME = {
     let sx = 0, sy = 0, down = false;
     stage.addEventListener("pointerdown", e=>{ down = true; sx = e.clientX; sy = e.clientY; });
     window.addEventListener("pointerup", e=>{ if(!down) return; down = false;
-      const dx = e.clientX-sx, dy = e.clientY-sy; if(Math.max(Math.abs(dx),Math.abs(dy)) < 22) return;
+      const dx = e.clientX-sx, dy = e.clientY-sy;
+      if(Math.max(Math.abs(dx),Math.abs(dy)) < 22){          // a tap: move toward the nearest edge
+        const r = this.board.getBoundingClientRect(), ox = (e.clientX - r.left)/r.width - .5, oy = (e.clientY - r.top)/r.height - .5;
+        if(Math.max(Math.abs(ox),Math.abs(oy)) < .18 || Math.max(Math.abs(ox),Math.abs(oy)) > .5) return;   // centre or outside: ignore
+        return this.move(Math.abs(ox) > Math.abs(oy) ? (ox > 0 ? "right" : "left") : (oy > 0 ? "down" : "up"));
+      }
       this.move(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up")); });
     document.addEventListener("keydown", e=>{
       const m = {ArrowLeft:"left",ArrowRight:"right",ArrowUp:"up",ArrowDown:"down",a:"left",d:"right",w:"up",s:"down"}[e.key];
