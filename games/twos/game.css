@@ -30,3 +30,16 @@
 .tw-face.k11::before{background:var(--tw-c6)}
 .tw-face.happy .tw-eyes::before,.tw-face.happy .tw-eyes::after{background:none;height:70%;margin-top:4%;box-sizing:border-box;
   border:calc(var(--w) * .035) solid var(--t);border-bottom:0;border-radius:999px 999px 0 0}
+/* calmer motion: slides take a little longer, new tiles appear only after the slide has finished */
+.tw-tile{transition-duration:.18s}
+@keyframes tw-in{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+.tw-face.tw-new{animation:tw-in .16s ease-out .17s both}
+/* first-game hint: shown until the first move */
+.tw-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;pointer-events:none;
+  padding:14px 20px;border-radius:calc(var(--radius) + 14px);background:var(--cellbg);color:var(--ink);
+  border:3px solid var(--gold);text-align:center;font-family:'Inter',sans-serif;font-size:15px;line-height:1.35;
+  box-shadow:0 6px 0 color-mix(in srgb, var(--gold) 35%, var(--cellbg))}
+.tw-hint b{display:block;font-family:'Fraunces',serif;font-size:30px;font-weight:800;color:var(--gold-deep)}
+.tw-hint svg{display:block;margin:6px auto 4px;width:64px;height:64px}
+.tw-hint svg path{fill:none;stroke:var(--gold);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+@media (prefers-reduced-motion: reduce){.tw-tile{transition-duration:.01s}.tw-face.tw-new{animation-duration:.01s;animation-delay:0s}}
