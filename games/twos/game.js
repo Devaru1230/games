@@ -4,8 +4,8 @@ const GAME = {
   name: "Ad Free Twos",
   title: ["TW","OS"],
   icon: "🔢",
-  version: "1.0",
-  changelog: [["1.0","First release: Tiny, Classic, Wide and Grand boards, a Daily, undo."]],
+  version: "1.1",
+  changelog: [["1.1","Brighter tiles: every number has its own colour and a little face, and big tiles wear a crown."],["1.0","First release: Tiny, Classic, Wide and Grand boards, a Daily, undo."]],
   blurb: "Swipe to slide. Matching tiles merge and double.",
   timer: false,
   daily: "classic",
@@ -50,13 +50,12 @@ const GAME = {
     const i = UL.pick(empty), t = {id:s.nextId++, v: UL.random() < 0.9 ? 2 : 4, fresh:true};
     s.cells[i] = t; return t;
   },
-  face(t){
-    const k = Math.log2(t.v), pct = Math.min(100, 8+(k-1)*9.2), over = t.v > 2048;
-    const f = document.createElement("div"); f.className = "tw-face"; f.textContent = t.v;
-    f.style.background = over ? "var(--ink)" : "color-mix(in srgb, var(--gold) "+pct.toFixed(0)+"%, var(--cellbg))";
-    f.style.color = (over || pct > 52) ? "var(--cream)" : "var(--ink)";
-    const w = (this.board.clientWidth||340)/this.st.n, d = String(t.v).length;
-    f.style.fontSize = Math.round(w*(d<=2?0.46:d===3?0.36:d===4?0.28:0.23))+"px";
+  face(t){            // a bright little creature: its own colour per value, two eyes, the number, a crown from 2048 up
+    const k = Math.min(12, Math.log2(t.v)), w = (this.board.clientWidth||340)/this.st.n, d = String(t.v).length;
+    const f = document.createElement("div"); f.className = "tw-face k"+k; f.style.setProperty("--w", w.toFixed(1)+"px");
+    const eyes = document.createElement("i"); eyes.className = "tw-eyes"; const num = document.createElement("span"); num.textContent = t.v;
+    f.append(eyes, num);
+    f.style.fontSize = Math.round(w*(d<=2?0.40:d===3?0.32:d===4?0.25:0.2))+"px";
     return f;
   },
   render(ghosts){
@@ -67,7 +66,7 @@ const GAME = {
       if(!el){ el = document.createElement("div"); el.className = "tw-tile"; el.style.transform = this.xy(i); el.appendChild(this.face(t)); el.dataset.v = t.v;
         this.board.appendChild(el); this.els.set(t.id, el); if(t.fresh){ UL.pop(el.firstChild); t.fresh = false; } }
       else { el.style.transform = this.xy(i);
-        if(+el.dataset.v !== t.v){ el.dataset.v = t.v; el.replaceChild(this.face(t), el.firstChild); UL.pop(el.firstChild); } }
+        if(+el.dataset.v !== t.v){ el.dataset.v = t.v; const f = this.face(t); f.classList.add("happy"); el.replaceChild(f, el.firstChild); UL.pop(f); setTimeout(()=>f.classList.remove("happy"), 450); } }
     });
     (ghosts||[]).forEach(g=>{ const el = this.els.get(g.id); if(!el) return; el.classList.add("ghost"); el.style.transform = this.xy(g.to); this.els.delete(g.id); setTimeout(()=>el.remove(), 120); });
     for(const [id, el] of this.els){ if(!live.has(id)){ el.remove(); this.els.delete(id); } }
