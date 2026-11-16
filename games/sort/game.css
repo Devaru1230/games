@@ -1,0 +1,31 @@
+/* Ad Free Colour Sort. Ten piece colours are defined once here; every colour also carries its own symbol. */
+.cs-box{position:absolute;inset:0;
+  --cs-1:#E5534B; --cs-2:#F39A2E; --cs-3:#F2D13A; --cs-4:#5DBB4A; --cs-5:#22A99A;
+  --cs-6:#3A86DE; --cs-7:#7B5AD8; --cs-8:#E065B3; --cs-9:#8E5B3A; --cs-10:#98A3AF;
+  --cs-mark:rgba(20,16,30,.55)}
+.cs-slot{position:absolute;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10%;
+  background:none;border:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.cs-tube{position:relative;width:var(--w);display:flex;flex-direction:column-reverse;justify-content:flex-start;gap:1px;padding:4px 4px 5px;
+  border:2.5px solid var(--ink);border-top-width:0;border-radius:0 0 calc(var(--w) * .45) calc(var(--w) * .45);
+  background:color-mix(in srgb, var(--gold) 8%, var(--cellbg));transition:transform .12s ease-out;overflow:visible}
+.cs-tube::before{content:"";position:absolute;left:-6px;right:-6px;top:0;height:3px;border-radius:2px;background:var(--ink)}
+.cs-tube.up{transform:translateY(-8px)}
+/* taps always land on the tube's tap area, never on a layer that is still sliding across from a pour */
+.cs-tube,.cs-l,.cs-cap{pointer-events:none}
+.cs-l{position:relative;flex:none;height:var(--lh);border-radius:3px;transition:transform .2s ease-out}
+.cs-l:first-of-type{border-radius:3px 3px calc(var(--w) * .4) calc(var(--w) * .4)}
+.cs-l::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.cs-1{background:var(--cs-1)} .cs-1::after{width:30%;aspect-ratio:1;border-radius:50%;background:var(--cs-mark)}
+.cs-2{background:var(--cs-2)} .cs-2::after{width:34%;aspect-ratio:1;border-radius:50%;border:3px solid var(--cs-mark)}
+.cs-3{background:var(--cs-3)} .cs-3::after{width:52%;height:4px;border-radius:2px;background:var(--cs-mark)}
+.cs-4{background:var(--cs-4)} .cs-4::after{width:42%;aspect-ratio:1;background:linear-gradient(var(--cs-mark),var(--cs-mark)) center/100% 4px no-repeat,linear-gradient(var(--cs-mark),var(--cs-mark)) center/4px 100% no-repeat}
+.cs-5{background:var(--cs-5)} .cs-5::after{width:4px;height:58%;border-radius:2px;background:var(--cs-mark)}
+.cs-6{background:var(--cs-6)} .cs-6::after{width:38%;aspect-ratio:1.1;background:var(--cs-mark);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.cs-7{background:var(--cs-7)} .cs-7::after{width:32%;aspect-ratio:1;border:3px solid var(--cs-mark);border-radius:2px}
+.cs-8{background:var(--cs-8)} .cs-8::after{width:32%;aspect-ratio:1;background:var(--cs-mark);transform:translate(-50%,-50%) rotate(45deg)}
+.cs-9{background:var(--cs-9)} .cs-9::after{width:48%;height:22%;background:radial-gradient(circle,var(--cs-mark) 58%,transparent 62%) left/50% 100% repeat-x}
+.cs-10{background:var(--cs-10)} .cs-10::after{width:42%;aspect-ratio:1;background:linear-gradient(45deg,transparent 42%,var(--cs-mark) 42% 58%,transparent 58%),linear-gradient(-45deg,transparent 42%,var(--cs-mark) 42% 58%,transparent 58%)}
+.cs-cap{position:absolute;left:-7px;right:-7px;top:-9px;height:9px;border-radius:4px 4px 1px 1px;background:var(--gold);
+  transform:scaleY(0);transform-origin:bottom;transition:transform .18s ease-out;z-index:2}
+.cs-tube.done .cs-cap{transform:scaleY(1)}
+@media (prefers-reduced-motion: reduce){.cs-tube,.cs-l,.cs-cap{transition-duration:.01s}}
