@@ -68,9 +68,18 @@ const ok=(n,c,x)=>console.log((c?"PASS":"FAIL")+"  "+n+(x?"  "+x:""));
   const d2 = await p2.evaluate(()=>{ UL.start("classic",{daily:UL.dailyNum()}); for(const d of ["left","up","left","up","right"]) GAME.move(d); return JSON.stringify(GAME.st.cells.map(t=>t?t.v:0)); });
   ok("daily is identical on two devices", d1===d2);
 
-  // family key unlocks, key leaves the address bar
-  const p3 = await ctx2.newPage(); await p3.goto(F+'?k=fam-7333fcce'); await p3.waitForTimeout(400);
+  // family key: only its fingerprint is in the files; the real key comes from UL_FAMILY_KEY (never committed)
+  const fs=require('fs'), path=require('path'), KEY=process.env.UL_FAMILY_KEY||"";
+  const built=[F.slice(7), path.resolve(__dirname,'../out/hub.html')].map(f=>fs.readFileSync(f,'utf8'));
+  ok("no family key written in the game or hub files", KEY!=="" && built.every(t=>!t.includes(KEY) && !/fam-[0-9a-f]{6,}/.test(t)), KEY?"":"set UL_FAMILY_KEY to run this check");
+  const p4 = await ctx2.newPage(); await p4.goto(F+'?k=fam-wrong123'); await p4.waitForTimeout(300);
+  ok("a wrong key does not unlock Pro", await p4.evaluate(()=>!UL.isPro()));
+  const p3 = await ctx2.newPage(); await p3.goto(F+'?k='+encodeURIComponent(KEY)); await p3.waitForTimeout(400);
   ok("family key unlocks Pro and is hidden", await p3.evaluate(()=>UL.isPro() && location.search===""));
+  const ctx3 = await b.newContext(); const h = await ctx3.newPage();
+  await h.goto('file://'+path.resolve(__dirname,'../out/hub.html')+'?k='+encodeURIComponent(KEY)); await h.waitForTimeout(300);
+  ok("hub accepts the family key and passes it to the games", await h.evaluate(()=>localStorage.getItem("ul_pro")==="true" && document.querySelector('a.game.new').getAttribute('href').includes('?k=')));
+  await ctx3.close();
   ok("nothing fetched from the network", ext.length===0, ext.join(","));
   ok("no page errors", errs.length===0, errs.join(" | "));
   await b.close();
