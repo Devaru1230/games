@@ -1,0 +1,100 @@
+<div class="app">
+  <div class="masthead">
+    <h1 id="ulTitle"></h1>
+    <div class="tabs">
+      <button class="tab active" id="tabPlay">Play</button>
+      <button class="tab" id="tabTrends">Trends</button>
+      <button class="tab" id="themeBtn" title="Themes">🎨</button>
+      <button class="tab" id="helpBtn" title="How to play">?</button>
+      <button class="vchip" id="verChip" title="Version"></button>
+      <button class="tab" id="proChip" title="Pro" style="display:none">★</button>
+    </div>
+  </div>
+
+  <div class="view show" id="viewPlay">
+    <div class="statusbar">
+      <span id="ulLevel"></span>
+      <span id="ulStatA"></span>
+      <span id="ulStatB"></span>
+      <span><b id="ulTimer">00:00</b> <button id="pauseBtn">⏸</button></span>
+    </div>
+    <div class="stage-wrap" id="stageWrap">
+      <div id="stage"></div>
+      <div class="pause-veil" id="pauseVeil">
+        <p>Paused</p>
+        <button class="btn" id="resumeBtn">Resume</button>
+        <button class="btn ghost" id="pauseRestart">Restart this game</button>
+      </div>
+    </div>
+    <div class="controls" id="controls"></div>
+    <div id="below"></div>
+  </div>
+
+  <div class="view" id="viewTrends">
+    <div id="trendsBody"></div>
+    <div class="footer-note" id="footNote"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="veil" id="lvlVeil"><div class="card">
+  <h2>New game</h2>
+  <p id="lvlBlurb"></p>
+  <div class="lvl-list" id="lvlList"></div>
+  <button class="btn ghost" id="lvlCancel">Cancel</button>
+</div></div>
+
+<div class="veil" id="endVeil"><div class="card">
+  <h2 id="endTitle"></h2>
+  <div class="big-score" id="endScore"></div>
+  <p id="endDetail"></p>
+  <button class="btn" id="waShare">Share on WhatsApp</button>
+  <button class="btn ghost" id="endNew">New game</button>
+  <button class="btn ghost" id="endClose">View the board</button>
+</div></div>
+
+<div class="veil" id="nameVeil"><div class="card">
+  <h2>Pick your player name</h2>
+  <p>One time only, and it carries across every Undercurrent Labs game on this device. No account, no email, nothing leaves your phone.</p>
+  <div class="chips" id="nameChips"></div>
+  <button class="linkbtn" id="reroll">Suggest different names</button>
+  <input class="name-input" id="nameInput" maxlength="20" placeholder="…or type your own">
+  <button class="btn" id="nameSave">Lock it in</button>
+</div></div>
+
+<div class="veil" id="tutVeil"><div class="card">
+  <div class="tut-step" id="tutStep"></div>
+  <div class="tut-icon" id="tutIcon"></div>
+  <h2 id="tutTitle"></h2>
+  <p id="tutBody"></p>
+  <button class="btn" id="tutNext">Next</button>
+  <button class="btn ghost" id="tutSkip">Skip</button>
+</div></div>
+
+<div class="veil" id="themeVeil"><div class="card">
+  <h2>Theme</h2>
+  <p>Your choice carries across every Undercurrent Labs game.</p>
+  <div class="lvl-list" id="themeList"></div>
+  <button class="btn" id="themeDone">Done</button>
+</div></div>
+
+<div class="veil" id="proVeil"><div class="card">
+  <h2 id="proTitle">Pro</h2>
+  <p id="proWhy"></p>
+  <div class="pay-list" id="proPerks"></div>
+  <div class="price" id="proPrice"></div>
+  <button class="btn" id="proBuy">Unlock Pro</button>
+  <div class="note" id="webNote" style="display:none">Pro unlocks are handled by Google Play, so they're available in the Android app.</div>
+  <button class="btn ghost" id="proRestore">Restore purchase</button>
+  <button class="btn ghost" id="proClose">Not now</button>
+</div></div>
+
+<div class="veil" id="verVeil"><div class="card">
+  <h2 id="verTitle"></h2>
+  <p>Ad-free, offline, private. Made by Undercurrent Labs.</p>
+  <div class="upd-list" id="verNotes"></div>
+  <button class="btn" id="verGoPro">Unlock Pro</button>
+  <button class="btn ghost" id="verReset">Reset scores &amp; start clean</button>
+  <button class="btn ghost" id="verClose">Close</button>
+</div></div>

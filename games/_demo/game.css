@@ -1,0 +1,4 @@
+/* Demo game styles. Use the theme tokens only: --cream --ink --gold --gold-deep --muted --line --sel --peer --same --err --err-bg --cellbg --radius */
+.dm-grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px;border:2px solid var(--ink);background:var(--cellbg)}
+.dm-cell{border:1px solid var(--line);border-radius:var(--radius);background:var(--cellbg);cursor:pointer}
+.dm-cell.lit{background:var(--gold);border-color:var(--gold-deep)}
