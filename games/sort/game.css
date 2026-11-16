@@ -1,31 +1,56 @@
-/* Ad Free Colour Sort. Ten piece colours are defined once here; every colour also carries its own symbol. */
+/* Ad Free Colour Sort. Piece colours are defined once here; every colour also carries its own faint symbol. */
 .cs-box{position:absolute;inset:0;
   --cs-1:#E5534B; --cs-2:#F39A2E; --cs-3:#F2D13A; --cs-4:#5DBB4A; --cs-5:#22A99A;
   --cs-6:#3A86DE; --cs-7:#7B5AD8; --cs-8:#E065B3; --cs-9:#8E5B3A; --cs-10:#98A3AF;
-  --cs-mark:rgba(20,16,30,.55)}
-.cs-slot{position:absolute;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10%;
+  --cs-mark:rgba(20,16,30,.42); --cs-dark:#000; --cs-light:#fff; --cs-gloss:rgba(255,255,255,.38)}
+.cs-slot{position:absolute;display:flex;align-items:flex-end;justify-content:center;padding-bottom:7%;
   background:none;border:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.cs-tube{position:relative;width:var(--w);display:flex;flex-direction:column-reverse;justify-content:flex-start;gap:1px;padding:4px 4px 5px;
-  border:2.5px solid var(--ink);border-top-width:0;border-radius:0 0 calc(var(--w) * .45) calc(var(--w) * .45);
-  background:color-mix(in srgb, var(--gold) 8%, var(--cellbg));transition:transform .12s ease-out;overflow:visible}
-.cs-tube::before{content:"";position:absolute;left:-6px;right:-6px;top:0;height:3px;border-radius:2px;background:var(--ink)}
-.cs-tube.up{transform:translateY(-8px)}
-/* taps always land on the tube's tap area, never on a layer that is still sliding across from a pour */
-.cs-tube,.cs-l,.cs-cap{pointer-events:none}
-.cs-l{position:relative;flex:none;height:var(--lh);border-radius:3px;transition:transform .2s ease-out}
-.cs-l:first-of-type{border-radius:3px 3px calc(var(--w) * .4) calc(var(--w) * .4)}
-.cs-l::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
-.cs-1{background:var(--cs-1)} .cs-1::after{width:30%;aspect-ratio:1;border-radius:50%;background:var(--cs-mark)}
-.cs-2{background:var(--cs-2)} .cs-2::after{width:34%;aspect-ratio:1;border-radius:50%;border:3px solid var(--cs-mark)}
-.cs-3{background:var(--cs-3)} .cs-3::after{width:52%;height:4px;border-radius:2px;background:var(--cs-mark)}
-.cs-4{background:var(--cs-4)} .cs-4::after{width:42%;aspect-ratio:1;background:linear-gradient(var(--cs-mark),var(--cs-mark)) center/100% 4px no-repeat,linear-gradient(var(--cs-mark),var(--cs-mark)) center/4px 100% no-repeat}
-.cs-5{background:var(--cs-5)} .cs-5::after{width:4px;height:58%;border-radius:2px;background:var(--cs-mark)}
-.cs-6{background:var(--cs-6)} .cs-6::after{width:38%;aspect-ratio:1.1;background:var(--cs-mark);clip-path:polygon(50% 0,100% 100%,0 100%)}
-.cs-7{background:var(--cs-7)} .cs-7::after{width:32%;aspect-ratio:1;border:3px solid var(--cs-mark);border-radius:2px}
-.cs-8{background:var(--cs-8)} .cs-8::after{width:32%;aspect-ratio:1;background:var(--cs-mark);transform:translate(-50%,-50%) rotate(45deg)}
-.cs-9{background:var(--cs-9)} .cs-9::after{width:48%;height:22%;background:radial-gradient(circle,var(--cs-mark) 58%,transparent 62%) left/50% 100% repeat-x}
-.cs-10{background:var(--cs-10)} .cs-10::after{width:42%;aspect-ratio:1;background:linear-gradient(45deg,transparent 42%,var(--cs-mark) 42% 58%,transparent 58%),linear-gradient(-45deg,transparent 42%,var(--cs-mark) 42% 58%,transparent 58%)}
-.cs-cap{position:absolute;left:-7px;right:-7px;top:-9px;height:9px;border-radius:4px 4px 1px 1px;background:var(--gold);
-  transform:scaleY(0);transform-origin:bottom;transition:transform .18s ease-out;z-index:2}
+/* the glass */
+.cs-tube{position:relative;width:var(--w);transition:transform .12s ease-out;
+  border:2.5px solid color-mix(in srgb, var(--ink) 75%, var(--cellbg));border-top:0;border-radius:0 0 calc(var(--w) * .5) calc(var(--w) * .5);
+  background:color-mix(in srgb, var(--gold) 5%, var(--cellbg))}
+.cs-tube::before{content:"";position:absolute;left:-6px;right:-6px;top:-1px;height:4px;border-radius:3px;background:color-mix(in srgb, var(--ink) 75%, var(--cellbg))}
+.cs-tube::after{content:"";position:absolute;left:16%;width:11%;top:9%;bottom:14%;border-radius:99px;background:var(--cs-gloss);z-index:2}
+.cs-tube.up{transform:translateY(-10px)}
+.cs-liq{position:absolute;left:3px;right:3px;bottom:3px;top:6px;display:flex;flex-direction:column-reverse;overflow:hidden;
+  border-radius:0 0 calc(var(--w) * .5 - 4px) calc(var(--w) * .5 - 4px)}
+/* taps always land on the tube's tap area, never on liquid that is still moving */
+.cs-tube,.cs-liq,.cs-l,.cs-cap,.cs-stream,.cs-tag{pointer-events:none}
+/* the liquid: layers touch with no gaps, so one colour reads as one body of liquid */
+.cs-l{position:relative;flex:none;height:var(--lh);transform-origin:bottom;
+  background:linear-gradient(90deg, color-mix(in srgb, var(--c) 78%, var(--cs-dark)) 0%, var(--c) 28%, color-mix(in srgb, var(--c) 85%, var(--cs-light)) 46%, var(--c) 64%, color-mix(in srgb, var(--c) 82%, var(--cs-dark)) 100%)}
+.cs-l:last-child::before{content:"";position:absolute;left:0;right:0;top:-3px;height:7px;border-radius:50%;
+  background:color-mix(in srgb, var(--c) 70%, var(--cs-light))}
+.cs-l::after{content:"";position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);opacity:.8}
+.cs-1{--c:var(--cs-1)} .cs-2{--c:var(--cs-2)} .cs-3{--c:var(--cs-3)} .cs-4{--c:var(--cs-4)} .cs-5{--c:var(--cs-5)}
+.cs-6{--c:var(--cs-6)} .cs-7{--c:var(--cs-7)} .cs-8{--c:var(--cs-8)} .cs-9{--c:var(--cs-9)} .cs-10{--c:var(--cs-10)}
+.cs-1::after{width:24%;aspect-ratio:1;border-radius:50%;background:var(--cs-mark)}
+.cs-2::after{width:28%;aspect-ratio:1;border-radius:50%;border:2.5px solid var(--cs-mark)}
+.cs-3::after{width:42%;height:3px;border-radius:2px;background:var(--cs-mark)}
+.cs-4::after{width:34%;aspect-ratio:1;background:linear-gradient(var(--cs-mark),var(--cs-mark)) center/100% 3px no-repeat,linear-gradient(var(--cs-mark),var(--cs-mark)) center/3px 100% no-repeat}
+.cs-5::after{width:3px;height:46%;border-radius:2px;background:var(--cs-mark)}
+.cs-6::after{width:30%;aspect-ratio:1.1;background:var(--cs-mark);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.cs-7::after{width:26%;aspect-ratio:1;border:2.5px solid var(--cs-mark);border-radius:2px}
+.cs-8::after{width:24%;aspect-ratio:1;background:var(--cs-mark);transform:translate(-50%,-50%) rotate(45deg)}
+.cs-9::after{width:40%;height:18%;background:radial-gradient(circle,var(--cs-mark) 58%,transparent 62%) left/50% 100% repeat-x}
+.cs-10::after{width:34%;aspect-ratio:1;background:linear-gradient(45deg,transparent 42%,var(--cs-mark) 42% 58%,transparent 58%),linear-gradient(-45deg,transparent 42%,var(--cs-mark) 42% 58%,transparent 58%)}
+/* the pour: the source tips, a stream runs across, one level falls and the other rises */
+@keyframes cs-fill{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes cs-drain{from{transform:scaleY(1)}to{transform:scaleY(0)}}
+.cs-l.fill{animation:cs-fill .09s linear both}
+.cs-l.drain{animation:cs-drain .09s linear both}
+@keyframes cs-tipl{0%{transform:translateY(-10px) rotate(0)}45%{transform:translateY(-14px) rotate(-16deg)}100%{transform:translateY(0) rotate(0)}}
+@keyframes cs-tipr{0%{transform:translateY(-10px) rotate(0)}45%{transform:translateY(-14px) rotate(16deg)}100%{transform:translateY(0) rotate(0)}}
+.cs-tube.tipl{animation:cs-tipl .24s ease-out} .cs-tube.tipr{animation:cs-tipr .24s ease-out}
+.cs-stream{position:absolute;width:6px;margin-left:-3px;border-radius:3px;background:var(--c);transform-origin:top;z-index:5;
+  animation:cs-stream .24s ease-out both}
+@keyframes cs-stream{0%{transform:rotate(var(--a)) scaleY(0);opacity:1}55%{transform:rotate(var(--a)) scaleY(1);opacity:1}100%{transform:rotate(var(--a)) scaleY(1);opacity:0}}
+/* finished tube */
+.cs-cap{position:absolute;left:-7px;right:-7px;top:-10px;height:10px;border-radius:5px 5px 1px 1px;background:var(--gold);
+  transform:scaleY(0);transform-origin:bottom;transition:transform .18s ease-out;z-index:3}
 .cs-tube.done .cs-cap{transform:scaleY(1)}
-@media (prefers-reduced-motion: reduce){.cs-tube,.cs-l,.cs-cap{transition-duration:.01s}}
+/* hint */
+.cs-tube.hint-from,.cs-tube.hint-to{box-shadow:0 0 0 3px var(--gold)}
+.cs-tag{position:absolute;left:50%;transform:translateX(-50%);top:2px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+  color:var(--cream);background:var(--gold-deep);border-radius:99px;padding:2px 8px;white-space:nowrap;z-index:6}
+@media (prefers-reduced-motion: reduce){.cs-tube,.cs-cap{transition-duration:.01s}.cs-l.fill,.cs-l.drain,.cs-tube.tipl,.cs-tube.tipr,.cs-stream{animation-duration:.01s;animation-delay:0s !important}}

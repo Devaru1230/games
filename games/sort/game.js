@@ -7,8 +7,8 @@ const GAME = {
   name: "Ad Free Colour Sort",
   title: ["COLOUR","SORT"],
   icon: "🧪",
-  version: "1.0",
-  changelog: [["1.0","First release: Easy, Medium, Hard and Expert puzzles, a Daily, undo and an extra tube."]],
+  version: "1.1",
+  changelog: [["1.1","The tubes now hold real-looking liquid that flows when you pour, the tubes are bigger, and a Hint button shows a good next pour."],["1.0","First release: Easy, Medium, Hard and Expert puzzles, a Daily, undo and an extra tube."]],
   blurb: "Pour until every tube holds one colour.",
   timer: false,
   daily: "medium",
@@ -18,14 +18,14 @@ const GAME = {
     {id:"hard",   name:"Hard",   note:"9 colours · 11 tubes",  pro:1,  k:9,  n:11, base:200},
     {id:"expert", name:"Expert", note:"10 colours · 11 tubes", pro:1,  k:10, n:11, base:250}
   ],
-  proPerks: ["Hard and Expert puzzles","Unlimited undo","One extra tube when you are stuck","Three extra themes"],
+  proPerks: ["Hard and Expert puzzles","Unlimited undo and hints","One extra tube when you are stuck","Three extra themes"],
   tutorial: [
     {icon:"👆", title:"Tap to lift, tap to pour", body:"Tap a tube to lift its top colour. Tap another tube to pour it in. Tap the same tube again to put it back."},
     {icon:"🧪", title:"Same colour or empty", body:"You can pour only onto the same colour, or into an empty tube, and only as much as fits."},
     {icon:"✅", title:"One colour per tube", body:"Sort every tube so each one holds a single colour. Fewer moves score more."}
   ],
-  FREE_UNDOS: 3, SOLVER_CAP: 60000,
-  st: null, sel: -1, els: [], box: null, undoBtn: null, extraBtn: null, lvl: null,
+  FREE_UNDOS: 3, FREE_HINTS: 3, SOLVER_CAP: 60000,
+  st: null, sel: -1, els: [], box: null, undoBtn: null, extraBtn: null, hintBtn: null, hinted: null, lvl: null,
 
   /* ---------- pure puzzle logic (also used by the tests) ---------- */
   top(t){ return t[t.length-1]; },
@@ -110,10 +110,12 @@ const GAME = {
   start({level, restore}){
     this.lvl = level; this.sel = -1;
     const st = this.st = restore ? JSON.parse(JSON.stringify(restore))
-      : Object.assign(this.make(level), {moves:0, undosUsed:0, undo:[], extra:false, done:0, recent:[]});
+      : Object.assign(this.make(level), {moves:0, undosUsed:0, hintsUsed:0, undo:[], extra:false, done:0, recent:[]});
+    if(st.hintsUsed == null) st.hintsUsed = 0;
     const stage = document.getElementById("stage");
     const box = this.box = document.createElement("div"); box.className = "cs-box"; stage.appendChild(box);
     this.undoBtn = UL.ctrl({icon:"undo", label:"Undo", onTap:()=>this.undoMove()});
+    this.hintBtn = UL.ctrl({icon:"hint", label:"Hint", onTap:()=>this.hint()});
     this.extraBtn = UL.ctrl({icon:"fresh", label:"Extra tube", onTap:()=>this.addTube()});
     this.render(); this.hud(); this.bind();
   },
@@ -121,11 +123,11 @@ const GAME = {
   layout(){
     const stage = document.getElementById("stage"), S = Math.min(stage.clientWidth, stage.clientHeight) || 340, n = this.st.tubes.length;
     const rows = n > 6 ? 2 : 1, per = Math.ceil(n/rows), slotW = S/per, rowH = S/rows;
-    const w = Math.min(slotW*0.7, 64), lh = Math.min(w*0.95, (rowH*0.8 - 14)/CS_CAP);
-    return {S, rows, per, slotW, rowH, w, lh, h: lh*CS_CAP + 10};
+    const w = Math.min(slotW*0.8, 80), lh = Math.min(w*1.05, (rowH*0.88 - 18)/CS_CAP);
+    return {S, rows, per, slotW, rowH, w, lh, h: lh*CS_CAP + 12};
   },
   render(){
-    const L = this.L = this.layout(), t = this.st.tubes, box = this.box; box.innerHTML = ""; this.els = [];
+    const L = this.L = this.layout(), t = this.st.tubes, box = this.box; box.innerHTML = ""; this.els = []; this.hinted = null;
     box.style.setProperty("--w", L.w+"px"); box.style.setProperty("--lh", L.lh+"px");
     t.forEach((z, i)=>{
       const row = L.rows===2 && i >= L.per ? 1 : 0, inRow = row ? t.length - L.per : Math.min(L.per, t.length), col = row ? i - L.per : i;
@@ -136,20 +138,23 @@ const GAME = {
       if(i === this.sel) tube.classList.add("up");
       if(this.full(z)) tube.classList.add("done");
       const cap = document.createElement("i"); cap.className = "cs-cap"; tube.appendChild(cap);
-      for(const ch of z){ const l = document.createElement("div"); l.className = "cs-l cs-"+(CS_LET.indexOf(ch)+1); tube.appendChild(l); }
+      const liq = document.createElement("div"); liq.className = "cs-liq"; tube.appendChild(liq);
+      for(const ch of z){ const l = document.createElement("div"); l.className = "cs-l cs-"+(CS_LET.indexOf(ch)+1); liq.appendChild(l); }
       slot.appendChild(tube); box.appendChild(slot); this.els.push(tube);
     });
   },
-  layers(i){ return [...this.els[i].querySelectorAll(".cs-l")]; },
+  layers(i){ return [...this.els[i].querySelectorAll(".cs-l:not(.drain)")]; },
   hud(){
     const s = this.st; UL.setStat("Moves <b>"+s.moves+"</b> · par "+s.par);
     const left = UL.isPro() ? "∞" : Math.max(0, this.FREE_UNDOS - s.undosUsed);
     this.undoBtn.setLabel("Undo "+left); this.undoBtn.classList.toggle("dim", !s.undo.length || left===0);
     this.extraBtn.setLabel(s.extra ? "Extra tube used" : "Extra tube"); this.extraBtn.classList.toggle("dim", s.extra);
+    const hl = UL.isPro() ? "∞" : Math.max(0, this.FREE_HINTS - s.hintsUsed);
+    this.hintBtn.setLabel("Hint "+hl); this.hintBtn.classList.toggle("dim", hl===0);
   },
   tapTube(i){
     if(UL.paused()) return;
-    const s = this.st;
+    const s = this.st; this.clearHint();
     if(this.sel < 0){
       if(!s.tubes[i].length || this.full(s.tubes[i])){ UL.shake(this.els[i]); UL.buzz("err"); return; }
       this.sel = i; this.els[i].classList.add("up"); UL.buzz("tap"); return;
@@ -161,14 +166,23 @@ const GAME = {
     this.move(a, i, k);
   },
   move(a, b, k){
-    const s = this.st, from = this.layers(a).slice(-k).map(e=>e.getBoundingClientRect());
+    const s = this.st, colour = this.top(s.tubes[a]), cls = "cs-"+(CS_LET.indexOf(colour)+1);
+    const srcR = this.els[a].getBoundingClientRect(), dstR = this.els[b].getBoundingClientRect(), boxR = this.box.getBoundingClientRect();
     s.undo.push(s.tubes.slice()); if(s.undo.length > 60) s.undo.shift();
     s.tubes = this.pour(s.tubes, a, b); s.moves++;
     this.render();
-    const moved = this.layers(b).slice(-k);
-    moved.forEach((e, j)=>{ const r = e.getBoundingClientRect(), f = from[j];
-      e.style.transition = "none"; e.style.transform = "translate("+(f.left-r.left)+"px,"+(f.top-r.top)+"px)";
-      void e.offsetWidth; e.style.transition = ""; e.style.transform = ""; });
+    // the source tips toward the target and its level falls
+    const src = this.els[a], liqA = src.querySelector(".cs-liq");
+    src.classList.add(dstR.left > srcR.left ? "tipr" : "tipl");
+    for(let j=0;j<k;j++){ const g = document.createElement("div"); g.className = "cs-l drain "+cls; g.style.animationDelay = ((k-1-j)*45)+"ms"; liqA.appendChild(g); }
+    setTimeout(()=>{ liqA.querySelectorAll(".drain").forEach(g=>g.remove()); src.classList.remove("tipl","tipr"); }, 260);
+    // a stream runs from mouth to mouth, and the target level rises
+    const x1 = srcR.left + srcR.width/2 - boxR.left, y1 = srcR.top - 6 - boxR.top, x2 = dstR.left + dstR.width/2 - boxR.left, y2 = dstR.top + 4 - boxR.top;
+    const st = document.createElement("div"); st.className = "cs-stream "+cls;
+    st.style.left = x1+"px"; st.style.top = y1+"px"; st.style.height = Math.hypot(x2-x1, y2-y1)+"px";
+    st.style.setProperty("--a", (Math.atan2(y2-y1, x2-x1)*180/Math.PI - 90)+"deg");
+    this.box.appendChild(st); setTimeout(()=>st.remove(), 260);
+    this.layers(b).slice(-k).forEach((e, j)=>{ e.classList.add("fill"); e.style.animationDelay = (j*45)+"ms"; e.addEventListener("animationend", ()=>{ e.classList.remove("fill"); e.style.animationDelay = ""; }, {once:true}); });
     UL.buzz("tap");
     if(this.full(s.tubes[b])){
       s.done++; s.recent.push(s.moves); s.recent = s.recent.filter(m=>s.moves - m < 3);
@@ -185,11 +199,32 @@ const GAME = {
     UL.setScore(Math.max(10, lvl.base - 5*over));
     const el = this.els[b], expertish = lvl.id==="hard" || lvl.id==="expert";
     setTimeout(()=>{
-      if(expertish && s.moves <= s.par && s.undosUsed===0) UL.praise(el, 4);   // par is the shortest possible solution
-      else if(s.moves <= s.par) UL.praise(el, 3);
+      if(expertish && s.moves <= s.par && s.undosUsed===0 && s.hintsUsed===0) UL.praise(el, 4);   // par is the shortest possible solution
+      else if(s.moves <= s.par && s.hintsUsed===0) UL.praise(el, 3);
       else UL.milestone(el, "Sorted!");
     }, 260);
     UL.end({won:true, title:"Sorted", line:"Sorted in "+s.moves+" moves (par "+s.par+")"});
+  },
+  /* Hint: solve from the board as it stands now and show the first pour of the shortest finish */
+  hint(){
+    if(UL.paused()) return;
+    const s = this.st;
+    if(!UL.isPro() && s.hintsUsed >= this.FREE_HINTS){ UL.requirePro("Free games include "+this.FREE_HINTS+" hints. Pro is unlimited."); return; }
+    const sol = this.solve(s.tubes);
+    if(!sol){ UL.toast("There is no way to finish from here. Undo a few pours or restart."); UL.buzz("err"); return; }
+    if(!sol.length) return;
+    const [a, b] = sol[0]; s.hintsUsed++;
+    if(this.sel >= 0){ this.els[this.sel].classList.remove("up"); this.sel = -1; }
+    this.clearHint(); this.hinted = [a, b];
+    this.els[a].classList.add("hint-from"); this.els[b].classList.add("hint-to");
+    const tag = (i, t)=>{ const g = document.createElement("span"); g.className = "cs-tag"; g.textContent = t; this.els[i].parentElement.appendChild(g); };
+    tag(a, "pour this"); tag(b, "into here");
+    UL.buzz("tap"); this.hud(); UL.save();
+  },
+  clearHint(){
+    if(!this.hinted) return; this.hinted = null;
+    this.box.querySelectorAll(".hint-from,.hint-to").forEach(e=>e.classList.remove("hint-from","hint-to"));
+    this.box.querySelectorAll(".cs-tag").forEach(e=>e.remove());
   },
   undoMove(){
     if(UL.paused()) return;
