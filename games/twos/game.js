@@ -55,7 +55,7 @@ const GAME = {
     const f = document.createElement("div"); f.className = "tw-face k"+k; f.style.setProperty("--w", w.toFixed(1)+"px");
     const eyes = document.createElement("i"); eyes.className = "tw-eyes"; const num = document.createElement("span"); num.textContent = t.v;
     f.append(eyes, num);
-    f.style.fontSize = Math.round(w*(d<=2?0.40:d===3?0.32:d===4?0.25:0.2))+"px";
+    f.style.fontSize = Math.round(w*(d<=2?0.36:d===3?0.30:d===4?0.23:0.19))+"px";
     return f;
   },
   render(ghosts){
