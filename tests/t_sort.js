@@ -100,6 +100,26 @@ const F='file://'+path.resolve(__dirname,'../out/sort.html');
   ok("with Pro, undo is unlimited", pro.undone===6 && !pro.veil);
   ok("with Pro, one extra tube, once per game", pro.n1===12 && pro.n2===12 && pro.drawn===12);
 
+  // ---- Hint: always the first pour of a shortest finish from the current board ----
+  const hintFree = await p.evaluate(()=>{ UL.store.set("ul_pro", false); return true; });
+  await p.reload(); await p.waitForTimeout(500); await p.click('#resumeBtn').catch(()=>{});
+  const h1 = await p.evaluate(()=>{ UL.start("medium",{seed:777}); const s=GAME.st; const out=[];
+    for(let k=0;k<3;k++){ const before=GAME.solve(s.tubes).length; GAME.hint(); const [a,b]=GAME.hinted; const tags=document.querySelectorAll('.cs-tag').length;
+      const legal=GAME.canPour(s.tubes,a,b)>0; GAME.tapTube(a); GAME.tapTube(b); const after=GAME.solve(s.tubes).length; out.push(legal && after===before-1 && tags===2); }
+    GAME.hint(); return {ok:out.every(Boolean), used:s.hintsUsed, wall:document.getElementById('proVeil').classList.contains('show')}; });
+  ok("Hint marks a legal pour that is the first step of a shortest finish", h1.ok);
+  ok("free tier: three hints, the fourth opens the paywall", h1.used===3 && h1.wall);
+  await p.click('#proClose'); await p.click('#resumeBtn').catch(()=>{});
+  const stuck = await p.evaluate(()=>{ UL.start("easy",{seed:5}); GAME.st.tubes=["ba","cbaa","abcd"]; GAME.render(); GAME.hint();
+    return {msg:document.getElementById('toast').textContent, used:GAME.st.hintsUsed}; });
+  ok("when no finish exists, Hint says so plainly and is not used up", /no way to finish/.test(stuck.msg) && stuck.used===0, stuck.msg);
+  await p.evaluate(()=>UL.store.set("ul_pro", true)); await p.reload(); await p.waitForTimeout(500); await p.click('#resumeBtn').catch(()=>{});
+  const h2 = await p.evaluate(()=>{ UL.start("hard",{seed:4242}); const s=GAME.st; let n=0;
+    while(!GAME.solved(s.tubes) && n++<80){ GAME.hint(); const [a,b]=GAME.hinted; GAME.tapTube(a); GAME.tapTube(b); }
+    return {solved:GAME.solved(s.tubes), moves:s.moves, par:s.par, hints:s.hintsUsed}; });
+  ok("with Pro, hints are unlimited and following them solves Hard at par", h2.solved && h2.moves===h2.par && h2.hints===h2.par, h2.moves+" moves, par "+h2.par);
+  await p.waitForTimeout(1500); await p.click('#endClose').catch(()=>{});
+
   // ---- Daily identical on two devices ----
   const daily = pg => pg.evaluate(()=>{ UL.start("medium",{daily:UL.dailyNum()}); return JSON.stringify(GAME.st.tubes)+" par "+GAME.st.par; });
   const d1 = await daily(p);
