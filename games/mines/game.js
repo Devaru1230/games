@@ -16,8 +16,8 @@ const GAME = {
   levels: [
     {id:"small",  name:"Small 8×8",    note:"10 mines",          c:8,  r:8,  m:10, mult:1, par:45},
     {id:"medium", name:"Medium 10×12", note:"20 mines",          c:10, r:12, m:20, mult:2, par:100},
-    {id:"large",  name:"Large 12×16",  note:"36 mines", pro:1,   c:12, r:16, m:36, mult:3, par:180},
-    {id:"expert", name:"Expert 14×18", note:"60 mines", pro:1,   c:14, r:18, m:60, mult:4, par:330}
+    {id:"large",  name:"Large 10×13",  note:"24 mines", pro:1,   c:10, r:13, m:24, mult:3, par:120},
+    {id:"expert", name:"Expert 12×15", note:"43 mines", pro:1,   c:12, r:15, m:43, mult:4, par:240}
   ],
   proPerks: ["Large and Expert boards","No-guess boards","Three extra themes","Score chart and level breakdown"],
   tutorial: [

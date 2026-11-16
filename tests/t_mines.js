@@ -106,7 +106,7 @@ const F='file://'+path.resolve(__dirname,'../out/mines.html');
   const proOn = await pp.evaluate(()=>UL.isPro());
   if(!proOn) await p.evaluate(()=>UL.store.set("ul_pro", true));
   await pp.close(); await p.reload(); await p.waitForTimeout(500); await p.click('#resumeBtn').catch(()=>{});
-  ok("with Pro, Expert starts", await p.evaluate(()=>{ UL.start("expert",{}); return UL.cur.level==="expert" && document.querySelectorAll('.mn-cell').length===252; }));
+  ok("with Pro, Expert starts", await p.evaluate(()=>{ UL.start("expert",{}); return UL.cur.level==="expert" && document.querySelectorAll('.mn-cell').length===180; }));
   const ngb2 = await p.locator('.ctrl', {hasText:'No-guess'}).boundingBox();
   await p.mouse.click(ngb2.x+ngb2.width/2, ngb2.y+ngb2.height/2); await p.waitForTimeout(150);
   ok("with Pro, No-guess turns on", await p.evaluate(()=>UL.kv("noguess",false)===true && !document.getElementById('proVeil').classList.contains('show')));
