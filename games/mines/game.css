@@ -1,0 +1,23 @@
+/* Ad Free Mines. Theme tokens only; numbers are told apart by the digit itself, colour is a second cue. */
+.mn-wrap{position:absolute;inset:0}
+.mn-board{position:absolute;display:grid;background:color-mix(in srgb, var(--gold) 14%, var(--cellbg));
+  border:2px solid var(--ink);border-radius:calc(var(--radius) + 4px);padding:1px;box-sizing:content-box;touch-action:none}
+.mn-cell{position:relative;display:flex;align-items:center;justify-content:center;margin:1px;border-radius:calc(var(--radius) + 2px);
+  font-family:'Fraunces',serif;font-weight:800;line-height:1;cursor:pointer}
+.mn-cell.mn-c{background:color-mix(in srgb, var(--gold) 34%, var(--cellbg));
+  box-shadow:inset 0 -3px 0 color-mix(in srgb, var(--gold) 55%, var(--cellbg)), inset 0 2px 0 color-mix(in srgb, var(--gold) 12%, var(--cellbg))}
+.mn-cell.mn-o{background:var(--cellbg);box-shadow:inset 0 0 0 1px var(--line);cursor:default}
+.mn-cell[data-n="1"]{color:var(--gold-deep)}
+.mn-cell[data-n="2"]{color:color-mix(in srgb, var(--gold-deep) 65%, var(--err))}
+.mn-cell[data-n="3"]{color:color-mix(in srgb, var(--gold-deep) 30%, var(--err))}
+.mn-cell[data-n="4"],.mn-cell[data-n="5"],.mn-cell[data-n="6"],.mn-cell[data-n="7"],.mn-cell[data-n="8"]{color:var(--err)}
+.mn-cell.mn-boom{background:var(--err-bg);box-shadow:inset 0 0 0 2px var(--err)}
+.mn-cell svg{width:62%;height:62%;overflow:visible}
+.mn-flag path.p{fill:var(--err);stroke:var(--err);stroke-width:1.5;stroke-linejoin:round}
+.mn-flag path.s{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round}
+.mn-mine circle{fill:var(--ink)} .mn-mine path{stroke:var(--ink);stroke-width:2.4;stroke-linecap:round}
+.mn-mine circle.g{fill:var(--cellbg)}
+.mn-wrong path.x{stroke:var(--err);stroke-width:2.6;stroke-linecap:round}
+@keyframes mn-rip{from{opacity:.25;transform:scale(.78)}to{opacity:1;transform:scale(1)}}
+.mn-cell.mn-rip{animation:mn-rip .11s ease-out both}
+@media (prefers-reduced-motion: reduce){.mn-cell.mn-rip{animation-duration:.01s;animation-delay:0s !important}}
