@@ -1,8 +1,32 @@
-.tw-board{position:absolute;inset:0;border:2px solid var(--ink);background:var(--peer);border-radius:calc(var(--radius) + 2px);--p:6px;--g:6px}
+/* Ad Free Twos: bright "little creature" tiles. Piece colours are defined once here (allowed for distinct pieces);
+   every tile also shows its number, so colour is never the only clue. */
+.tw-board{--p:7px;--g:7px;
+  --tw-dark:#1E1A33; --tw-light:#FFFFFF; --tw-shade:rgba(20,14,40,.22); --tw-crown:#FFC93C;
+  --tw-c1:#7CCFF5; --tw-c2:#86DB7E; --tw-c3:#FFD64A; --tw-c4:#FF9E45; --tw-c5:#FF7A93; --tw-c6:#E2457E;
+  --tw-c7:#B062EB; --tw-c8:#6A5AE0; --tw-c9:#2D82D8; --tw-c10:#0FA37F; --tw-c11:#F0A81C; --tw-c12:#2B2F4A;
+  position:absolute;inset:0;border-radius:calc(var(--radius) + 16px);
+  background:color-mix(in srgb, var(--gold) 16%, var(--cellbg));
+  border:3px solid color-mix(in srgb, var(--gold) 38%, var(--cellbg))}
 .tw-slot,.tw-tile{position:absolute;left:var(--p);top:var(--p);
   width:calc((100% - 2*var(--p) - (var(--n) - 1)*var(--g)) / var(--n));height:calc((100% - 2*var(--p) - (var(--n) - 1)*var(--g)) / var(--n))}
-.tw-slot{background:var(--cellbg);border:1px solid var(--line);border-radius:var(--radius)}
+.tw-slot{background:color-mix(in srgb, var(--gold) 7%, var(--cellbg));border-radius:calc(var(--radius) + 10px);
+  box-shadow:inset 0 3px 0 color-mix(in srgb, var(--gold) 14%, var(--cellbg))}
 .tw-tile{transition:transform .11s ease-out;z-index:2}
 .tw-tile.ghost{z-index:1}
-.tw-face{width:100%;height:100%;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);
-  font-family:'Fraunces',serif;font-weight:700;border:1px solid var(--gold-deep);background:var(--sel);color:var(--ink)}
+.tw-face{--c:var(--tw-c1);--t:var(--tw-dark);position:relative;width:100%;height:100%;border-radius:calc(var(--radius) + 10px);
+  background:var(--c);color:var(--t);box-shadow:inset 0 calc(var(--w) * -.07) 0 var(--tw-shade);
+  display:flex;align-items:center;justify-content:center;padding-top:calc(var(--w) * .2);padding-bottom:calc(var(--w) * .07);
+  font-family:'Fraunces',serif;font-weight:800;line-height:1;letter-spacing:-.02em}
+.tw-eyes{position:absolute;left:50%;top:22%;width:calc(var(--w) * .34);height:calc(var(--w) * .11);transform:translateX(-50%);
+  display:flex;justify-content:space-between}
+.tw-eyes::before,.tw-eyes::after{content:"";width:calc(var(--w) * .11);height:100%;border-radius:50%;background:var(--t)}
+.tw-face.k11::before,.tw-face.k12::before{content:"";position:absolute;left:50%;top:calc(var(--w) * -.13);width:calc(var(--w) * .42);height:calc(var(--w) * .22);
+  transform:translateX(-50%);background:var(--tw-crown);clip-path:polygon(0 100%,0 15%,25% 60%,50% 0,75% 60%,100% 15%,100% 100%)}
+.tw-face.k2{--c:var(--tw-c2)} .tw-face.k3{--c:var(--tw-c3)} .tw-face.k4{--c:var(--tw-c4)} .tw-face.k5{--c:var(--tw-c5)}
+.tw-face.k6{--c:var(--tw-c6);--t:var(--tw-light)} .tw-face.k7{--c:var(--tw-c7);--t:var(--tw-light)} .tw-face.k8{--c:var(--tw-c8);--t:var(--tw-light)}
+.tw-face.k9{--c:var(--tw-c9);--t:var(--tw-light)} .tw-face.k10{--c:var(--tw-c10);--t:var(--tw-light)} .tw-face.k11{--c:var(--tw-c11)}
+.tw-face.k12{--c:var(--tw-c12);--t:var(--tw-light)}
+[data-theme="night"] .tw-board{--tw-shade:rgba(0,0,0,.35)}
+.tw-face.k11::before{background:var(--tw-c6)}
+.tw-face.happy .tw-eyes::before,.tw-face.happy .tw-eyes::after{background:none;height:70%;margin-top:4%;box-sizing:border-box;
+  border:calc(var(--w) * .035) solid var(--t);border-bottom:0;border-radius:999px 999px 0 0}

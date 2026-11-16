@@ -161,14 +161,38 @@ canvas{width:100%;height:auto;display:block}
 @media (prefers-reduced-motion: reduce){.praise,.ul-pop,.ul-sweep,.ul-shake{animation-duration:.01s}}
 
 /* ==== GAME STYLES START ==== */
-.tw-board{position:absolute;inset:0;border:2px solid var(--ink);background:var(--peer);border-radius:calc(var(--radius) + 2px);--p:6px;--g:6px}
+/* Ad Free Twos: bright "little creature" tiles. Piece colours are defined once here (allowed for distinct pieces);
+   every tile also shows its number, so colour is never the only clue. */
+.tw-board{--p:7px;--g:7px;
+  --tw-dark:#1E1A33; --tw-light:#FFFFFF; --tw-shade:rgba(20,14,40,.22); --tw-crown:#FFC93C;
+  --tw-c1:#7CCFF5; --tw-c2:#86DB7E; --tw-c3:#FFD64A; --tw-c4:#FF9E45; --tw-c5:#FF7A93; --tw-c6:#E2457E;
+  --tw-c7:#B062EB; --tw-c8:#6A5AE0; --tw-c9:#2D82D8; --tw-c10:#0FA37F; --tw-c11:#F0A81C; --tw-c12:#2B2F4A;
+  position:absolute;inset:0;border-radius:calc(var(--radius) + 16px);
+  background:color-mix(in srgb, var(--gold) 16%, var(--cellbg));
+  border:3px solid color-mix(in srgb, var(--gold) 38%, var(--cellbg))}
 .tw-slot,.tw-tile{position:absolute;left:var(--p);top:var(--p);
   width:calc((100% - 2*var(--p) - (var(--n) - 1)*var(--g)) / var(--n));height:calc((100% - 2*var(--p) - (var(--n) - 1)*var(--g)) / var(--n))}
-.tw-slot{background:var(--cellbg);border:1px solid var(--line);border-radius:var(--radius)}
+.tw-slot{background:color-mix(in srgb, var(--gold) 7%, var(--cellbg));border-radius:calc(var(--radius) + 10px);
+  box-shadow:inset 0 3px 0 color-mix(in srgb, var(--gold) 14%, var(--cellbg))}
 .tw-tile{transition:transform .11s ease-out;z-index:2}
 .tw-tile.ghost{z-index:1}
-.tw-face{width:100%;height:100%;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);
-  font-family:'Fraunces',serif;font-weight:700;border:1px solid var(--gold-deep);background:var(--sel);color:var(--ink)}
+.tw-face{--c:var(--tw-c1);--t:var(--tw-dark);position:relative;width:100%;height:100%;border-radius:calc(var(--radius) + 10px);
+  background:var(--c);color:var(--t);box-shadow:inset 0 calc(var(--w) * -.07) 0 var(--tw-shade);
+  display:flex;align-items:center;justify-content:center;padding-top:calc(var(--w) * .2);padding-bottom:calc(var(--w) * .07);
+  font-family:'Fraunces',serif;font-weight:800;line-height:1;letter-spacing:-.02em}
+.tw-eyes{position:absolute;left:50%;top:22%;width:calc(var(--w) * .34);height:calc(var(--w) * .11);transform:translateX(-50%);
+  display:flex;justify-content:space-between}
+.tw-eyes::before,.tw-eyes::after{content:"";width:calc(var(--w) * .11);height:100%;border-radius:50%;background:var(--t)}
+.tw-face.k11::before,.tw-face.k12::before{content:"";position:absolute;left:50%;top:calc(var(--w) * -.13);width:calc(var(--w) * .42);height:calc(var(--w) * .22);
+  transform:translateX(-50%);background:var(--tw-crown);clip-path:polygon(0 100%,0 15%,25% 60%,50% 0,75% 60%,100% 15%,100% 100%)}
+.tw-face.k2{--c:var(--tw-c2)} .tw-face.k3{--c:var(--tw-c3)} .tw-face.k4{--c:var(--tw-c4)} .tw-face.k5{--c:var(--tw-c5)}
+.tw-face.k6{--c:var(--tw-c6);--t:var(--tw-light)} .tw-face.k7{--c:var(--tw-c7);--t:var(--tw-light)} .tw-face.k8{--c:var(--tw-c8);--t:var(--tw-light)}
+.tw-face.k9{--c:var(--tw-c9);--t:var(--tw-light)} .tw-face.k10{--c:var(--tw-c10);--t:var(--tw-light)} .tw-face.k11{--c:var(--tw-c11)}
+.tw-face.k12{--c:var(--tw-c12);--t:var(--tw-light)}
+[data-theme="night"] .tw-board{--tw-shade:rgba(0,0,0,.35)}
+.tw-face.k11::before{background:var(--tw-c6)}
+.tw-face.happy .tw-eyes::before,.tw-face.happy .tw-eyes::after{background:none;height:70%;margin-top:4%;box-sizing:border-box;
+  border:calc(var(--w) * .035) solid var(--t);border-bottom:0;border-radius:999px 999px 0 0}
 /* ==== GAME STYLES END ==== */
 </style>
 </head>
@@ -707,8 +731,8 @@ const GAME = {
   name: "Ad Free Twos",
   title: ["TW","OS"],
   icon: "🔢",
-  version: "1.0",
-  changelog: [["1.0","First release: Tiny, Classic, Wide and Grand boards, a Daily, undo."]],
+  version: "1.1",
+  changelog: [["1.1","Brighter tiles: every number has its own colour and a little face, and big tiles wear a crown."],["1.0","First release: Tiny, Classic, Wide and Grand boards, a Daily, undo."]],
   blurb: "Swipe to slide. Matching tiles merge and double.",
   timer: false,
   daily: "classic",
@@ -753,13 +777,12 @@ const GAME = {
     const i = UL.pick(empty), t = {id:s.nextId++, v: UL.random() < 0.9 ? 2 : 4, fresh:true};
     s.cells[i] = t; return t;
   },
-  face(t){
-    const k = Math.log2(t.v), pct = Math.min(100, 8+(k-1)*9.2), over = t.v > 2048;
-    const f = document.createElement("div"); f.className = "tw-face"; f.textContent = t.v;
-    f.style.background = over ? "var(--ink)" : "color-mix(in srgb, var(--gold) "+pct.toFixed(0)+"%, var(--cellbg))";
-    f.style.color = (over || pct > 52) ? "var(--cream)" : "var(--ink)";
-    const w = (this.board.clientWidth||340)/this.st.n, d = String(t.v).length;
-    f.style.fontSize = Math.round(w*(d<=2?0.46:d===3?0.36:d===4?0.28:0.23))+"px";
+  face(t){            // a bright little creature: its own colour per value, two eyes, the number, a crown from 2048 up
+    const k = Math.min(12, Math.log2(t.v)), w = (this.board.clientWidth||340)/this.st.n, d = String(t.v).length;
+    const f = document.createElement("div"); f.className = "tw-face k"+k; f.style.setProperty("--w", w.toFixed(1)+"px");
+    const eyes = document.createElement("i"); eyes.className = "tw-eyes"; const num = document.createElement("span"); num.textContent = t.v;
+    f.append(eyes, num);
+    f.style.fontSize = Math.round(w*(d<=2?0.40:d===3?0.32:d===4?0.25:0.2))+"px";
     return f;
   },
   render(ghosts){
@@ -770,7 +793,7 @@ const GAME = {
       if(!el){ el = document.createElement("div"); el.className = "tw-tile"; el.style.transform = this.xy(i); el.appendChild(this.face(t)); el.dataset.v = t.v;
         this.board.appendChild(el); this.els.set(t.id, el); if(t.fresh){ UL.pop(el.firstChild); t.fresh = false; } }
       else { el.style.transform = this.xy(i);
-        if(+el.dataset.v !== t.v){ el.dataset.v = t.v; el.replaceChild(this.face(t), el.firstChild); UL.pop(el.firstChild); } }
+        if(+el.dataset.v !== t.v){ el.dataset.v = t.v; const f = this.face(t); f.classList.add("happy"); el.replaceChild(f, el.firstChild); UL.pop(f); setTimeout(()=>f.classList.remove("happy"), 450); } }
     });
     (ghosts||[]).forEach(g=>{ const el = this.els.get(g.id); if(!el) return; el.classList.add("ghost"); el.style.transform = this.xy(g.to); this.els.delete(g.id); setTimeout(()=>el.remove(), 120); });
     for(const [id, el] of this.els){ if(!live.has(id)){ el.remove(); this.els.delete(id); } }
