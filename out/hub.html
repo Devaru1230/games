@@ -70,11 +70,12 @@ h1 span{color:var(--gold)}
 <script>
 /* One line per game. Newest first. status: "new" | "live" | "soon" */
 const GAMES = [
-  {name:"Colour Sort", blurb:"Pour until every tube is one colour.",  url:"sort/",   status:"new"},
+  {name:"Blocks", blurb:"Drag shapes, clear lines, chain streaks.", url:"blocks/",  status:"new"},
+  {name:"Colour Sort", blurb:"Pour until every tube is one colour.",  url:"sort/",   status:"live"},
   {name:"Mines",  blurb:"One tap opens half the board.",            url:"mines/",  status:"live"},
   {name:"Twos",   blurb:"Slide, merge, double. Reach 2048.",        url:"twos/",   status:"live"},
   {name:"Sudoku", blurb:"Four levels, a Daily, lightning mode.",    url:"../adfreesudoku/", status:"live"},
-  {name:"Blocks", blurb:"Next week.",                               url:"#",       status:"soon"}
+  {name:"Pairs",  blurb:"Next week.",                               url:"#",       status:"soon"}
 ];
 const FAMILY_HASH = "fc0b91ea84d8294bbaacbaf19726c66b726bd75bb28d8acf3cd7e9646d3e2efc";  /* SHA-256 of the family key; the key itself is not stored here */
 function ulHash(s){const K=[],H=[1779033703,-1150833019,1013904242,-1521486534,1359893119,-1694144372,528734635,1541459225];
