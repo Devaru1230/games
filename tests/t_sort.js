@@ -23,16 +23,16 @@ const F='file://'+path.resolve(__dirname,'../out/sort.html');
   await p.click('#proClose');
   await p.evaluate(()=>{ UL.newGame(); [...document.querySelectorAll('#lvlList .lvl')].find(x=>x.textContent.includes('Easy')).click(); });
   await p.waitForTimeout(300);
-  ok("Easy starts with 7 tubes and 20 layers", await p.evaluate(()=>document.querySelectorAll('.cs-tube').length===7 && document.querySelectorAll('.cs-l').length===20));
+  ok("Easy starts with 7 tubes and 20 layers", await p.evaluate(()=>document.querySelectorAll('.cs-slot').length===7 && [...document.querySelectorAll('.cs-slot')].reduce((a,e)=>a+ +e.dataset.layers,0)===20));
 
   // ---- tapping: lift, cancel, wrong target, pour ----
   const plan = await p.evaluate(()=>{ const t=GAME.st.tubes; let good=null, bad=null;
     for(let a=0;a<t.length;a++) for(let c=0;c<t.length;c++){ if(a===c||!t[a].length) continue; if(!good && GAME.canPour(t,a,c)) good=[a,c]; if(!bad && !GAME.canPour(t,a,c) && t[c].length) bad=[a,c]; }
     return {good, bad}; });
   await tap(plan.good[0]); await p.waitForTimeout(150);
-  ok("a tap lifts the tube", await p.evaluate(i=>document.querySelectorAll('.cs-tube')[i].classList.contains('up') && GAME.sel===i, plan.good[0]));
+  ok("a tap lifts the tube", await p.evaluate(i=>document.querySelectorAll('.cs-slot')[i].classList.contains('up') && GAME.sel===i, plan.good[0]));
   await tap(plan.good[0]); await p.waitForTimeout(150);
-  ok("tapping the same tube puts it back", await p.evaluate(i=>!document.querySelectorAll('.cs-tube')[i].classList.contains('up') && GAME.sel===-1, plan.good[0]));
+  ok("tapping the same tube puts it back", await p.evaluate(i=>!document.querySelectorAll('.cs-slot')[i].classList.contains('up') && GAME.sel===-1, plan.good[0]));
   const before = await tubes();
   await tap(plan.bad[0]); await tap(plan.bad[1]); await p.waitForTimeout(150);
   ok("a wrong target shakes and changes nothing", before===await tubes() && await p.evaluate(()=>GAME.st.moves===0));
@@ -62,7 +62,14 @@ const F='file://'+path.resolve(__dirname,'../out/sort.html');
   await p.reload(); await p.waitForTimeout(600);
   const back = await p.evaluate(()=>JSON.stringify(GAME.serialize())+"|"+UL.cur.score);
   ok("reload restores the exact tubes, moves and undo count, paused", snap===back && await p.evaluate(()=>UL.cur.paused));
-  ok("restored tubes are drawn as they were", await p.evaluate(()=>[...document.querySelectorAll('.cs-tube')].every((e,i)=>e.querySelectorAll('.cs-l').length===GAME.st.tubes[i].length)));
+  ok("restored tubes are drawn as they were", await p.evaluate(()=>[...document.querySelectorAll('.cs-slot')].every((e,i)=>+e.dataset.layers===GAME.st.tubes[i].length)));
+  const px = await p.evaluate(()=>{ const cv=GAME.cv, ctx=cv.getContext('2d'), L=GAME.L, d=GAME.dpr, bad=[];
+    const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+    GAME.st.tubes.forEach((z,i)=>{ const x=(GAME.pos[i][0]+L.padX)*d, y=(GAME.pos[i][1]+L.padTop+L.len*0.86)*d, c=ctx.getImageData(Math.round(x+L.w*0.18*d),Math.round(y),1,1).data;
+      if(!z.length) return; const want=hex(GAME.C.liq["abcdefghij".indexOf(z[0])]);
+      if(want.some((v,k)=>Math.abs(v-c[k])>70)) bad.push(i+":"+[...c].slice(0,3)+" vs "+want); });
+    return bad; });
+  ok("every tube's bottom colour is really painted on the canvas", px.length===0, px.join(" | "));
   await p.click('#resumeBtn');
 
   // ---- a scripted win: the solver's moves played through real taps ----
@@ -72,7 +79,7 @@ const F='file://'+path.resolve(__dirname,'../out/sort.html');
   await p.waitForTimeout(1600);
   const win = await p.evaluate(()=>({over:UL.cur.over, modal:document.getElementById('endVeil').classList.contains('show'), title:document.getElementById('endTitle').textContent,
     detail:document.getElementById('endDetail').textContent, recs:UL.kv("records",[]), save:UL.kv("save",null), share:UL.cur.shareTxt, score:UL.cur.score, moves:GAME.st.moves, par:GAME.st.par,
-    caps:document.querySelectorAll('.cs-tube.done').length}));
+    caps:document.querySelectorAll('.cs-slot.done').length}));
   ok("playing the solver's moves by tapping wins at par", win.over && win.modal && win.moves===win.par && win.title==="Sorted", win.detail);
   ok("the win is recorded with full score and the save cleared", win.recs.length===1 && win.recs[0].w===1 && win.score===100 && win.save===null);
   ok("every finished tube shows its cap", win.caps===5);
@@ -95,7 +102,7 @@ const F='file://'+path.resolve(__dirname,'../out/sort.html');
     for(let k=0;k<6;k++) GAME.undoMove();
     const undone = s.undosUsed, veil = document.getElementById('proVeil').classList.contains('show');
     GAME.addTube(); const n1=s.tubes.length; GAME.addTube(); const n2=s.tubes.length;
-    return {n0, undone, veil, n1, n2, drawn:document.querySelectorAll('.cs-tube').length}; });
+    return {n0, undone, veil, n1, n2, drawn:document.querySelectorAll('.cs-slot').length}; });
   ok("with Pro, Hard starts with 11 tubes", pro.n0===11);
   ok("with Pro, undo is unlimited", pro.undone===6 && !pro.veil);
   ok("with Pro, one extra tube, once per game", pro.n1===12 && pro.n2===12 && pro.drawn===12);
@@ -119,6 +126,18 @@ const F='file://'+path.resolve(__dirname,'../out/sort.html');
     return {solved:GAME.solved(s.tubes), moves:s.moves, par:s.par, hints:s.hintsUsed}; });
   ok("with Pro, hints are unlimited and following them solves Hard at par", h2.solved && h2.moves===h2.par && h2.hints===h2.par, h2.moves+" moves, par "+h2.par);
   await p.waitForTimeout(1500); await p.click('#endClose').catch(()=>{});
+
+  // ---- the pour animation: the game state changes at once, the picture catches up, and nothing gets stuck ----
+  const an = await p.evaluate(async()=>{ UL.start("medium",{seed:2024}); const t=GAME.st.tubes; let mv=null;
+    for(let a=0;a<t.length&&!mv;a++) for(let c=0;c<t.length&&!mv;c++) if(GAME.canPour(t,a,c)) mv=[a,c];
+    GAME.tapTube(mv[0]); GAME.tapTube(mv[1]); const during=!!GAME.anim, movedNow=GAME.st.moves===1;
+    await new Promise(r=>setTimeout(r,2600)); return {during, movedNow, after:GAME.anim===null}; });
+  ok("a pour animates, the move counts at once, and the animation ends by itself", an.during && an.movedNow && an.after);
+  const ctxR = await b.newContext({viewport:{width:412,height:860}, offline:true, reducedMotion:'reduce'}); const pr = await ctxR.newPage();
+  await pr.goto(F); await pr.waitForTimeout(400);
+  ok("with reduced motion turned on, pours happen without the animation", await pr.evaluate(()=>{ document.querySelectorAll('.veil.show').forEach(v=>v.classList.remove('show')); UL.start("easy",{seed:3});
+    const t=GAME.st.tubes; for(let a=0;a<t.length;a++) for(let c=0;c<t.length;c++) if(GAME.canPour(t,a,c)){ GAME.tapTube(a); GAME.tapTube(c); return GAME.anim===null && GAME.st.moves===1; } return false; }));
+  await ctxR.close();
 
   // ---- Daily identical on two devices ----
   const daily = pg => pg.evaluate(()=>{ UL.start("medium",{daily:UL.dailyNum()}); return JSON.stringify(GAME.st.tubes)+" par "+GAME.st.par; });
@@ -160,7 +179,7 @@ const F='file://'+path.resolve(__dirname,'../out/sort.html');
   await p3.goto(F); await p3.waitForTimeout(400);
   const fit = await p3.evaluate(()=>{ const out=[]; for(const id of ["easy","medium","hard","expert","expert+"]){ document.querySelectorAll('.veil.show').forEach(v=>v.classList.remove('show'));
     UL.start(id.replace("+",""),{}); if(id.endsWith("+")) GAME.addTube();
-    const s=document.getElementById('stage').getBoundingClientRect(); const els=[...document.querySelectorAll('.cs-tube,.cs-cap')];
+    const s=document.getElementById('stage').getBoundingClientRect(), L=GAME.L; const els=GAME.pos.map(p=>({getBoundingClientRect:()=>({left:s.left+p[0]-L.w/2-6, right:s.left+p[0]+L.w/2+6, top:s.top+p[1]-12, bottom:s.top+p[1]+L.len})}));
     const inside = els.every(e=>{ const r=e.getBoundingClientRect(); return r.left>=s.left-1 && r.right<=s.right+1 && r.top>=s.top-12 && r.bottom<=s.bottom+1; });
     const slot=document.querySelector('.cs-slot').getBoundingClientRect();
     out.push({id, inside, scroll:document.documentElement.scrollHeight>innerHeight, tw:Math.round(slot.width)}); } return out; });
