@@ -7,8 +7,8 @@ const GAME = {
   name: "Ad Free Colour Sort",
   title: ["COLOUR","SORT"],
   icon: "🧪",
-  version: "1.2",
-  changelog: [["1.2","Long glass tubes, and pours that behave like real liquid: the tube tips over the target, the stream falls and splashes, and the levels settle."],["1.1","The tubes now hold real-looking liquid that flows when you pour, the tubes are bigger, and a Hint button shows a good next pour."],["1.0","First release: Easy, Medium, Hard and Expert puzzles, a Daily, undo and an extra tube."]],
+  version: "1.3",
+  changelog: [["1.3","Longer, wider tubes that are easier to see and tap."],["1.2","Long glass tubes, and pours that behave like real liquid: the tube tips over the target, the stream falls and splashes, and the levels settle."],["1.1","The tubes now hold real-looking liquid that flows when you pour, the tubes are bigger, and a Hint button shows a good next pour."],["1.0","First release: Easy, Medium, Hard and Expert puzzles, a Daily, undo and an extra tube."]],
   blurb: "Pour until every tube holds one colour.",
   timer: false,
   daily: "medium",
@@ -126,7 +126,7 @@ const GAME = {
   layout(){
     const stage = document.getElementById("stage"), S = Math.min(stage.clientWidth, stage.clientHeight) || 340, n = this.st.tubes.length;
     const rows = n > 5 ? 2 : 1, per = Math.ceil(n/rows), slotW = S/per, rowH = S/rows;
-    const w = Math.min(slotW*0.58, 50), len = Math.min(rowH*0.86 - 10, w*5.2), padTop = Math.round(len*1.05), padX = 24;
+    const w = Math.min(slotW*0.66, 56), len = rowH - 16, padTop = Math.round(len*1.05), padX = 24;   // as tall as a row allows, and wide enough to tap easily
     return {S, rows, per, slotW, rowH, w, len, g:2.4, padTop, padX};
   },
   /* the inside of a tube in its own frame: mouth centre at (0,0), y grows toward the rounded bottom */
@@ -185,7 +185,7 @@ const GAME = {
       const slot = document.createElement("button"); slot.className = "cs-slot"; slot.dataset.i = i;
       slot.style.left = x+"px"; slot.style.top = y+"px"; slot.style.width = L.slotW+"px"; slot.style.height = L.rowH+"px";
       box.appendChild(slot); this.els.push(slot);
-      this.pos.push([x + L.slotW/2, y + L.rowH - 6 - L.len]);
+      this.pos.push([x + L.slotW/2, y + L.rowH - 4 - L.len]);
     });
     const dpr = Math.min(3, window.devicePixelRatio || 1), W = L.S + 2*L.padX, H = L.S + L.padTop + 8;
     const cv = this.cv; cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
