@@ -46,7 +46,7 @@ const F='file://'+path.resolve(__dirname,'../out/sort.html');
   ok("restart replays the identical puzzle", start1===await tubes() && await p.evaluate(()=>GAME.st.moves===0));
 
   // ---- undo limit in the free tier ----
-  const um = await p.evaluate(()=>{ const s=GAME.st; for(let k=0;k<5;k++){ const t=s.tubes; let done=false;
+  const um = await p.evaluate(()=>{ UL.start("easy",{seed:31337}); const s=GAME.st; for(let k=0;k<5;k++){   // a fixed puzzle that allows five pours in a row const t=s.tubes; let done=false;
       for(let a=0;a<t.length&&!done;a++) for(let c=0;c<t.length&&!done;c++) if(GAME.canPour(t,a,c)){ GAME.tapTube(a); GAME.tapTube(c); done=true; } }
     const m=s.moves; GAME.undoMove(); GAME.undoMove(); GAME.undoMove(); const used=s.undosUsed; GAME.undoMove();
     return {m, used, blocked: s.undosUsed===3 && document.getElementById('proVeil').classList.contains('show')}; });
