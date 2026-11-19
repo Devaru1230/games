@@ -1,0 +1,29 @@
+/* Ad Free Picture Grid. Theme tokens only. */
+.pg-wrap{position:absolute;inset:0}
+.pg-cc,.pg-rc{position:absolute;display:flex}
+.pg-cc{flex-direction:row}
+.pg-rc{flex-direction:column}
+.pg-clue{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:calc(var(--cs) * .16);font-family:'JetBrains Mono',monospace;font-weight:700;
+  font-size:max(9px, calc(var(--cs) * .5));color:var(--ink);line-height:1}
+.pg-cc .pg-clue{flex-direction:column;justify-content:flex-end;padding-bottom:calc(var(--cs) * .14)}
+.pg-rc .pg-clue{padding-right:calc(var(--cs) * .18)}
+.pg-clue.ok{color:var(--muted);opacity:.45}
+.pg-clue.act{background:var(--peer);border-radius:var(--radius)}
+.pg-board{position:absolute;display:grid;grid-template-columns:repeat(var(--n),1fr);grid-template-rows:repeat(var(--n),1fr);
+  border:2px solid var(--ink);background:var(--cellbg);touch-action:none;box-sizing:content-box;margin:-2px 0 0 -2px}
+.pg-cell{position:relative;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.pg-cell.br{border-right:2px solid var(--ink)}
+.pg-cell.bb{border-bottom:2px solid var(--ink)}
+.pg-cell.act{background:var(--peer)}
+.pg-cell.on{background:var(--ink)}
+.pg-cell.x::before,.pg-cell.x::after{content:"";position:absolute;left:22%;right:22%;top:50%;height:max(1.5px, calc(var(--cs) * .09));margin-top:calc(var(--cs) * -.045);
+  background:var(--gold-deep);border-radius:2px;transform:rotate(45deg)}
+.pg-cell.x::after{transform:rotate(-45deg)}
+/* finished: the grid lines fade so the picture stands out */
+.pg-board.pg-done{border-color:transparent;transition:border-color .2s}
+.pg-board.pg-done .pg-cell{border-color:transparent;transition:border-color .2s, background .2s}
+.pg-board.pg-done .pg-cell.x::before,.pg-board.pg-done .pg-cell.x::after{opacity:0}
+.pg-wrap.pg-done .pg-clue{opacity:.25}
+.pg-opt{display:block;margin:8px auto 0;border:1px solid var(--line);background:var(--cellbg);color:var(--muted);border-radius:var(--radius);
+  font-family:'JetBrains Mono',monospace;font-size:11px;padding:9px 14px;min-height:40px;cursor:pointer}
+@media (prefers-reduced-motion: reduce){.pg-board.pg-done,.pg-board.pg-done .pg-cell{transition:none}}
