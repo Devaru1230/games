@@ -1,0 +1,26 @@
+/* Ad Free Solitaire. Cards drawn in CSS and inline SVG with theme tokens. */
+.so-wrap{position:absolute;inset:0;touch-action:none;--suit-r:var(--err);--suit-b:var(--ink)}
+.so-slot{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);border:1.5px dashed var(--line);border-radius:calc(var(--cw) * .1)}
+.so-slot.recycle::after{content:"↻";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:calc(var(--cw) * .5);color:var(--muted)}
+.so-card{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);border-radius:calc(var(--cw) * .1);transition:transform .18s ease-out;
+  border:1px solid color-mix(in srgb, var(--ink) 40%, var(--cellbg));cursor:pointer;touch-action:none;
+  background:repeating-linear-gradient(45deg, color-mix(in srgb, var(--gold) 55%, var(--cellbg)) 0 4px, color-mix(in srgb, var(--gold) 35%, var(--cellbg)) 4px 8px);
+  box-shadow:0 1px 2px color-mix(in srgb, var(--ink) 25%, transparent)}
+.so-card > *{display:none}
+.so-card.up{background:var(--cellbg)}
+.so-card.up > *{display:block}
+.so-r{position:absolute;left:7%;top:3%;font-family:'Fraunces',serif;font-weight:700;font-size:calc(var(--cw) * .38);line-height:1}
+.so-s{position:absolute;right:6%;top:6%;width:calc(var(--cw) * .27);height:calc(var(--cw) * .27)}
+.so-big{position:absolute;left:50%;bottom:9%;width:calc(var(--cw) * .5);height:calc(var(--cw) * .5);transform:translateX(-50%)}
+.so-card.black{color:var(--suit-b);fill:var(--suit-b)} .so-card.red{color:var(--suit-r);fill:var(--suit-r)}
+.so-card svg{fill:inherit}
+/* four colours: each suit its own tone, and the shapes already differ */
+.so-wrap.four .so-card.s0{color:var(--ink);fill:var(--ink)} .so-wrap.four .so-card.s1{color:var(--err);fill:var(--err)}
+.so-wrap.four .so-card.s2{color:color-mix(in srgb, var(--err) 50%, var(--gold));fill:color-mix(in srgb, var(--err) 50%, var(--gold))} .so-wrap.four .so-card.s3{color:var(--gold-deep);fill:var(--gold-deep)}
+.so-card.lift{transition:none;z-index:900 !important;box-shadow:0 8px 16px color-mix(in srgb, var(--ink) 35%, transparent)}
+.so-card.hintme{box-shadow:0 0 0 3px var(--gold), 0 0 12px var(--gold)}
+.so-dealing{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)}
+.so-cascade{position:absolute;inset:-60px 0 0 0;z-index:950}
+.so-opt{display:block;margin:8px auto 0;border:1px solid var(--line);background:var(--cellbg);color:var(--muted);border-radius:var(--radius);
+  font-family:'JetBrains Mono',monospace;font-size:11px;padding:9px 14px;min-height:40px;cursor:pointer}
+@media (prefers-reduced-motion: reduce){.so-card{transition-duration:.01s}}
