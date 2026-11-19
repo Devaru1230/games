@@ -178,21 +178,24 @@ canvas{width:100%;height:auto;display:block}
 .bk-cell.clearing.on{background:color-mix(in srgb, var(--gold) 45%, var(--cellbg))}
 .bk-cell.bk-gone::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--gold);animation:bk-gone .24s ease-out forwards}
 @keyframes bk-gone{from{opacity:.95;transform:scale(1)}to{opacity:0;transform:scale(.35)}}
-/* the tray under the board */
-.bk-tray{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;touch-action:none}
-.bk-tray.master{grid-template-columns:repeat(3,1fr) .75fr}
-.bk-slot{position:relative;height:132px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);
-  border-radius:calc(var(--radius) + 4px);background:var(--cellbg);touch-action:none;cursor:grab}
-.bk-slot.hold{border-style:dashed}
-.bk-slot.hold small{position:absolute;top:4px;left:0;right:0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--muted)}
-.bk-slot.nofit .bk-piece{opacity:.3}
-.bk-slot.lifted .bk-piece{opacity:.15}
-.bk-piece{--cs:23px;display:grid;grid-template-columns:repeat(var(--w),var(--cs));grid-template-rows:repeat(var(--h),var(--cs));gap:2px;pointer-events:none}
+/* the queue under the board: the shape to drop now, and the next ones */
+.bk-queue{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:6px;margin-top:6px}
+.bk-queue:has(.hold){grid-template-columns:1.4fr 1fr 1fr 1fr}
+.bk-q{position:relative;height:118px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:calc(var(--radius) + 4px);background:var(--cellbg)}
+.bk-q.now{border:2px solid var(--gold-deep)}
+.bk-q.hold{border-style:dashed}
+.bk-q small{position:absolute;top:5px;left:0;right:0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--muted)}
+.bk-q.now small{color:var(--gold-deep);font-weight:700}
+.bk-piece{--cs:15px;display:grid;grid-template-columns:repeat(var(--w),var(--cs));grid-template-rows:repeat(var(--h),var(--cs));gap:2px;pointer-events:none;margin-top:10px}
+.bk-q.now .bk-piece{--cs:21px}
 .bk-piece i{border-radius:calc(var(--radius) + 2px)}
-.bk-float{position:fixed;left:0;top:0;z-index:60;gap:3px;filter:drop-shadow(0 6px 10px color-mix(in srgb, var(--ink) 35%, transparent))}
-@media (max-height:800px){.bk-slot{height:112px}.bk-piece{--cs:19px}}
-@media (max-height:700px){.bk-slot{height:92px}.bk-piece{--cs:16px}}
-@media (prefers-reduced-motion: reduce){.bk-cell.bk-gone::after{animation-duration:.01s}}
+.bk-board{touch-action:none;cursor:pointer}
+/* the falling shape */
+.bk-fall{position:absolute;z-index:4;margin:0;gap:3px;animation:bk-fall linear both}
+@keyframes bk-fall{from{transform:translateY(var(--from))}to{transform:translateY(0)}}
+@media (max-height:760px){.bk-q{height:96px}.bk-q.now .bk-piece{--cs:17px}.bk-piece{--cs:12px}}
+@media (max-height:660px){.bk-q{height:82px}.bk-q.now .bk-piece{--cs:14px}.bk-piece{--cs:10px}}
+@media (prefers-reduced-motion: reduce){.bk-cell.bk-gone::after,.bk-fall{animation-duration:.01s !important}}
 /* ==== GAME STYLES END ==== */
 </style>
 </head>
@@ -726,7 +729,7 @@ UL.boot = () => {
 
 /* ==== GAME START ==== */
 /* ===================== AD FREE BLOCKS ===================== */
-/* A placement puzzle: drag shapes from the tray onto the board; full rows and columns clear. */
+/* A drop puzzle: tap a column and the shape drops straight down. Full rows clear and the rows above fall. */
 const BK_FAM = ["single","line","square","corner","bend"];
 const BK_SHAPES = (()=>{          // every shape in its fixed orientation, with a weight for the bag and a family for its shade
   const norm = cs => { const mx = Math.min(...cs.map(c=>c[0])), my = Math.min(...cs.map(c=>c[1]));
@@ -751,192 +754,170 @@ const GAME = {
   name: "Ad Free Blocks",
   title: ["BLO","CKS"],
   icon: "🟨",
-  version: "1.0",
-  changelog: [["1.0","First release: Classic, Quick, Big and Master boards, a Daily, line streaks."]],
-  blurb: "Drag shapes onto the board. Fill a row or column to clear it.",
+  version: "2.0",
+  changelog: [["2.0","A new way to play: the board fills the screen and each shape drops straight down where you tap. Full rows clear and everything above falls."],
+    ["1.0","First release: Classic, Quick, Big and Master boards, a Daily, line streaks."]],
+  blurb: "Tap a column and the shape drops in. Fill a row to clear it.",
   timer: false,
   daily: "classic",
   levels: [
-    {id:"classic", name:"Classic 8×8", note:"play until nothing fits",       n:8},
+    {id:"classic", name:"Classic 8×8", note:"play until a shape won't fit",  n:8},
     {id:"quick",   name:"Quick 6×6",   note:"30 shapes, highest score",     n:6, limit:30},
     {id:"big",     name:"Big 10×10",   note:"more room to plan",     pro:1, n:10},
-    {id:"master",  name:"Master 8×8",  note:"hold a shape, tap to rotate", pro:1, n:8, master:1}
+    {id:"master",  name:"Master 8×8",  note:"rotate and hold shapes", pro:1, n:8, master:1}
   ],
-  proPerks: ["Big 10×10 board","Master mode with hold and rotate","Three extra themes","Score chart and level breakdown"],
+  proPerks: ["Big 10×10 board","Master mode with rotate and hold","Three extra themes","Score chart and level breakdown"],
   tutorial: [
-    {icon:"👆", title:"Drag a shape", body:"Three shapes wait under the board. Drag one onto the board. A shadow shows where it will land."},
-    {icon:"➖", title:"Fill a line to clear it", body:"A full row or column clears. Clearing several at once, or one after another, scores much more."},
-    {icon:"🏁", title:"Until nothing fits", body:"When all three shapes are placed, three more arrive. The game ends when none of the waiting shapes fits."}
+    {icon:"👆", title:"Tap to drop", body:"Touch the board: a shadow shows where the shape will land. Slide left or right to choose the column, then let go and it drops straight down."},
+    {icon:"➖", title:"Fill a row to clear it", body:"A full row clears and everything above falls down. Clearing two rows at once, or one after another, scores much more."},
+    {icon:"👀", title:"Plan ahead", body:"The next shapes wait under the board. The game ends when a shape no longer fits anywhere."}
   ],
-  st: null, lvl: null, cells: [], board: null, tray: null, drag: null,
+  st: null, lvl: null, cells: [], board: null, tray: null, aim: null,
 
   /* ---------- pure logic (also used by the tests) ---------- */
   fits(b, n, sh, x, y){ for(const [dx,dy] of sh.cells){ const X = x+dx, Y = y+dy; if(X<0||Y<0||X>=n||Y>=n||b[Y*n+X]) return false; } return true; },
-  fitsAnywhere(b, n, sh){ for(let y=0;y<n;y++) for(let x=0;x<n;x++) if(this.fits(b,n,sh,x,y)) return true; return false; },
+  width(sh){ return Math.max(...sh.cells.map(c=>c[0]))+1; },
+  height(sh){ return Math.max(...sh.cells.map(c=>c[1]))+1; },
+  /* where a shape dropped in column x comes to rest; -1 if it cannot enter */
+  landing(b, n, sh, x){ if(x < 0 || x + this.width(sh) > n || !this.fits(b, n, sh, x, 0)) return -1; let y = 0; while(this.fits(b, n, sh, x, y+1)) y++; return y; },
   rotate(sh){ const c = sh.cells.map(([x,y])=>[-y, x]), mx = Math.min(...c.map(p=>p[0])), my = Math.min(...c.map(p=>p[1]));
     const k = c.map(p=>[p[0]-mx, p[1]-my]).sort((a,b)=>a[1]-b[1]||a[0]-b[0]).map(p=>p.join(",")).join(";"); return BK_BYKEY[k]; },
-  /* every orientation a player may use for this shape (Master can rotate) */
   forms(sh, master){ if(!master) return [sh]; const out = [sh]; let c = sh; for(let i=0;i<3;i++){ c = this.rotate(c); if(!out.includes(c)) out.push(c); } return out; },
+  dropsAnywhere(b, n, sh){ for(let x=0;x+this.width(sh)<=n;x++) if(this.landing(b, n, sh, x) >= 0) return true; return false; },
   canPlay(st){
-    const m = !!st.master, list = st.tray.filter(Boolean).map(k=>BK_BYKEY[k]).concat(m && st.hold ? [BK_BYKEY[st.hold]] : []);
-    return list.some(sh=>this.forms(sh, m).some(f=>this.fitsAnywhere(st.board, st.n, f)));
+    const list = [st.queue[0]].concat(st.master && st.hold ? [st.hold] : []).map(k=>BK_BYKEY[k]);
+    return list.some(sh=>this.forms(sh, st.master).some(f=>this.dropsAnywhere(st.board, st.n, f)));
   },
-  /* place a shape; returns what happened. Full rows and columns clear together. */
-  place(st, key, x, y){
-    const sh = BK_BYKEY[key], n = st.n, b = st.board;
-    if(!this.fits(b, n, sh, x, y)) return null;
+  /* drop the current shape into column x. Full rows clear and the rows above fall. */
+  drop(st, x){
+    const key = st.queue[0], sh = BK_BYKEY[key], n = st.n, b = st.board, y = this.landing(b, n, sh, x);
+    if(y < 0) return null;
     const placed = sh.cells.map(([dx,dy])=>(y+dy)*n + x+dx); placed.forEach(i=>b[i] = sh.fam+1);
-    const rows = [], cols = [];
-    for(let r=0;r<n;r++){ let f = true; for(let c=0;c<n;c++) if(!b[r*n+c]){ f = false; break; } if(f) rows.push(r); }
-    for(let c=0;c<n;c++){ let f = true; for(let r=0;r<n;r++) if(!b[r*n+c]){ f = false; break; } if(f) cols.push(c); }
-    const cleared = new Set(); rows.forEach(r=>{ for(let c=0;c<n;c++) cleared.add(r*n+c); }); cols.forEach(c=>{ for(let r=0;r<n;r++) cleared.add(r*n+c); });
-    const lines = rows.length + cols.length;
-    cleared.forEach(i=>b[i] = 0);
+    const rows = []; for(let r=0;r<n;r++){ let f = true; for(let c=0;c<n;c++) if(!b[r*n+c]){ f = false; break; } if(f) rows.push(r); }
+    if(rows.length){ const keep = []; for(let r=0;r<n;r++) if(!rows.includes(r)) keep.push(b.slice(r*n, r*n+n));
+      const fresh = []; for(let k=0;k<rows.length;k++) fresh.push(new Array(n).fill(0));
+      const nb = fresh.concat(keep).flat(); for(let i=0;i<n*n;i++) b[i] = nb[i]; }
+    const lines = rows.length;
     st.streak = lines ? st.streak + 1 : 0;
-    const points = sh.cells.length + 10*lines*lines + (lines ? st.streak*5 : 0);   // 10 a line, times the number of lines; streak x 5
+    const points = sh.cells.length + 10*lines*lines + (lines ? st.streak*5 : 0);
     st.placed++; st.lines += lines;
-    return {placed, rows, cols, lines, cleared:[...cleared], points, empty: b.every(v=>!v), streak: st.streak};
+    st.queue.shift(); this.refill(st);
+    return {placed, y, rows, lines, points, empty: b.every(v=>!v), streak: st.streak};
   },
-  /* the bag: weighted, seeded; never deal three shapes that all fail when a shape that fits exists */
-  /* the small Quick board leaves out the three largest shapes, so a sensible player can usually place all 30 */
   bag(n){ return n <= 6 ? BK_SHAPES.filter(s=>!["sq3","line5","l5"].includes(s.name)) : BK_SHAPES; },
   drawShape(n){ const bag = this.bag(n||8), tot = bag.reduce((a,s)=>a+s.w, 0); let r = UL.random()*tot; for(const s of bag){ r -= s.w; if(r <= 0) return s; } return bag[0]; },
-  deal(st){
-    let best = null;
-    for(let t=0;t<12;t++){ const three = [this.drawShape(st.n), this.drawShape(st.n), this.drawShape(st.n)];
-      if(three.some(sh=>this.forms(sh, st.master).some(f=>this.fitsAnywhere(st.board, st.n, f)))){ best = three; break; }
-      if(!best) best = three; }
-    if(!best.some(sh=>this.fitsAnywhere(st.board, st.n, sh))){           // still nothing: offer a shape that does fit, if any exists
-      const ok = this.bag(st.n).filter(sh=>this.fitsAnywhere(st.board, st.n, sh)); if(ok.length) best[0] = ok[UL.rnd(ok.length)]; }
-    st.tray = best.map(s=>s.key);
+  /* keep three shapes waiting; the next one to play is never a dead shape while a shape that fits exists */
+  refill(st){
+    while(st.queue.length < 3) st.queue.push(this.drawShape(st.n).key);
+    const cur = BK_BYKEY[st.queue[0]];
+    if(!this.forms(cur, st.master).some(f=>this.dropsAnywhere(st.board, st.n, f))){
+      for(let t=0;t<12;t++){ const c = this.drawShape(st.n); if(this.dropsAnywhere(st.board, st.n, c)){ st.queue[0] = c.key; break; } }
+    }
   },
 
   /* ---------- game ---------- */
   start({level, restore}){
-    this.lvl = level; this.drag = null; this.ending = false;
-    const st = this.st = restore ? JSON.parse(JSON.stringify(restore))
-      : {n:level.n, board:new Array(level.n*level.n).fill(0), tray:[], hold:null, held:false, placed:0, lines:0, streak:0, master:!!level.master, limit:level.limit||0};
-    if(!restore) this.deal(st);
+    this.lvl = level; this.aim = null; this.ending = false;
+    let st = restore ? JSON.parse(JSON.stringify(restore)) : null;
+    if(!st || !st.queue) st = {n:level.n, board:new Array(level.n*level.n).fill(0), queue:[], hold:null, placed:0, lines:0, streak:0, master:!!level.master, limit:level.limit||0};
+    this.st = st; if(!st.queue.length) this.refill(st);
     const stage = document.getElementById("stage"), wrap = document.createElement("div"); wrap.className = "bk-wrap";
     const b = this.board = document.createElement("div"); b.className = "bk-board"; b.style.setProperty("--n", st.n);
     this.cells = [];
     for(let i=0;i<st.n*st.n;i++){ const c = document.createElement("div"); c.className = "bk-cell"; b.appendChild(c); this.cells.push(c); }
     wrap.appendChild(b); stage.appendChild(wrap);
-    const below = document.getElementById("below"), tray = this.tray = document.createElement("div"); tray.className = "bk-tray"+(st.master ? " master" : "");
-    below.appendChild(tray);
-    this.paintBoard(); this.paintTray(); this.hud(); this.bind();
+    if(st.master){ UL.ctrl({icon:"fresh", label:"Rotate", onTap:()=>this.rotateCur()}); UL.ctrl({icon:"shuffle", label:"Hold", onTap:()=>this.hold()}); }
+    const tray = this.tray = document.createElement("div"); tray.className = "bk-queue"; document.getElementById("below").appendChild(tray);
+    this.paintBoard(); this.paintQueue(); this.hud(); this.bind();
   },
   serialize(){ return JSON.parse(JSON.stringify(this.st)); },
   best(){ return UL.kv("best_"+this.lvl.id, 0); },
   hud(){ const s = this.st;
     UL.setStat((s.limit ? "Shape <b>"+Math.min(s.placed+1, s.limit)+"/"+s.limit+"</b> · " : "")+"Best <b>"+this.best()+"</b>"+(s.streak >= 2 ? " · streak <b>"+s.streak+"</b>" : "")); },
-  paintBoard(){ const s = this.st; this.cells.forEach((c, i)=>{ const v = s.board[i]; c.className = "bk-cell"+(v ? " on f"+(v-1) : ""); }); },
-  piece(key, mini){
-    const sh = BK_BYKEY[key], w = Math.max(...sh.cells.map(c=>c[0]))+1, h = Math.max(...sh.cells.map(c=>c[1]))+1;
-    const el = document.createElement("div"); el.className = "bk-piece f"+sh.fam; el.style.setProperty("--w", w); el.style.setProperty("--h", h);
+  paintBoard(){ const s = this.st; this.cells.forEach((c, i)=>{ const v = s.board[i]; c.className = "bk-cell"+(v ? " on f"+(v-1) : ""); }); this.paintAim(); },
+  piece(key){
+    const sh = BK_BYKEY[key], el = document.createElement("div"); el.className = "bk-piece f"+sh.fam; el.style.setProperty("--w", this.width(sh)); el.style.setProperty("--h", this.height(sh));
     sh.cells.forEach(([x,y])=>{ const c = document.createElement("i"); c.style.gridColumn = (x+1); c.style.gridRow = (y+1); el.appendChild(c); });
-    el.dataset.key = key; return el;
+    return el;
   },
-  paintTray(){
+  paintQueue(){
     const s = this.st, t = this.tray; t.innerHTML = "";
-    const slots = s.tray.map((k, i)=>({k, i})); if(s.master) slots.push({k:s.hold, i:"hold"});
-    for(const {k, i} of slots){
-      const slot = document.createElement("div"); slot.className = "bk-slot"+(i==="hold" ? " hold" : ""); slot.dataset.slot = i;
-      if(i==="hold"){ const lab = document.createElement("small"); lab.textContent = "Hold"; slot.appendChild(lab); }
-      if(k){ const p = this.piece(k); slot.appendChild(p);
-        if(!this.forms(BK_BYKEY[k], s.master).some(f=>this.fitsAnywhere(s.board, s.n, f))) slot.classList.add("nofit"); }
-      t.appendChild(slot);
-    }
+    const slot = (k, cls, label) => { const d = document.createElement("div"); d.className = "bk-q "+cls; const l = document.createElement("small"); l.textContent = label; d.appendChild(l); if(k) d.appendChild(this.piece(k)); t.appendChild(d); return d; };
+    slot(s.queue[0], "now", "Now"); slot(s.queue[1], "next", "Next"); slot(s.queue[2], "next", "Then");
+    if(s.master) slot(s.hold, "next hold", "Hold");
   },
   cellSize(){ return this.board.getBoundingClientRect().width / this.st.n; },
-
-  /* ---------- dragging ---------- */
-  bind(){
-    this.tray.addEventListener("pointerdown", e=>{
-      if(UL.paused() || this.ending) return; const slot = e.target.closest(".bk-slot"); if(!slot) return;
-      const which = slot.dataset.slot, key = which==="hold" ? this.st.hold : this.st.tray[+which]; if(!key) return;
-      e.preventDefault(); slot.setPointerCapture(e.pointerId);
-      this.drag = {which, key, slot, id:e.pointerId, x0:e.clientX, y0:e.clientY, moved:false, el:null, at:null};
-    });
-    this.tray.addEventListener("pointermove", e=>{ const d = this.drag; if(!d || e.pointerId !== d.id) return;
-      if(!d.moved && Math.hypot(e.clientX-d.x0, e.clientY-d.y0) < 8) return;
-      if(!d.moved){ d.moved = true; this.lift(d); }
-      this.follow(d, e.clientX, e.clientY); });
-    const up = e=>{ const d = this.drag; if(!d || e.pointerId !== d.id) return; this.drag = null;
-      if(!d.moved){ if(this.st.master && d.which !== "hold") this.rotateSlot(+d.which); return; }
-      this.drop(d); };
-    this.tray.addEventListener("pointerup", up); this.tray.addEventListener("pointercancel", e=>{ const d = this.drag; if(d){ this.drag = null; this.cancel(d); } });
-    if(!this.bound){ this.bound = true; window.addEventListener("resize", ()=>{ if(this.drag) this.cancel(this.drag); }); }
-  },
-  lift(d){
-    const cs = this.cellSize(), el = this.piece(d.key); el.classList.add("bk-float"); el.style.setProperty("--cs", cs+"px");
-    document.body.appendChild(el); d.el = el; d.slot.classList.add("lifted"); UL.buzz("tap");
-  },
-  follow(d, x, y){
-    const sh = BK_BYKEY[d.key], cs = this.cellSize(), w = (Math.max(...sh.cells.map(c=>c[0]))+1)*cs, h = (Math.max(...sh.cells.map(c=>c[1]))+1)*cs;
-    const left = x - w/2, top = y - h - cs*0.9;                   // the shape floats above the finger so the finger never covers it
-    d.el.style.transform = "translate("+left+"px,"+top+"px)";
-    const r = this.board.getBoundingClientRect(), gx = Math.round((left - r.left)/cs), gy = Math.round((top - r.top)/cs);
-    const ok = this.fits(this.st.board, this.st.n, sh, gx, gy), overHold = this.overHold(x, y);
-    d.at = ok ? [gx, gy] : null; d.hold = overHold;
-    this.ghost(ok ? sh : null, gx, gy);
-  },
-  overHold(x, y){ if(!this.st.master) return false; const h = this.tray.querySelector(".bk-slot.hold"); if(!h) return false; const r = h.getBoundingClientRect(); return x>=r.left && x<=r.right && y>=r.top && y<=r.bottom; },
-  ghost(sh, gx, gy){
+  /* the shadow: where the current shape lands in the aimed column */
+  paintAim(){
     this.cells.forEach(c=>c.classList.remove("ghost","clearing"));
-    if(!sh) return;
-    const s = this.st, n = s.n, b = s.board.slice(); sh.cells.forEach(([dx,dy])=>{ const i = (gy+dy)*n + gx+dx; this.cells[i].classList.add("ghost"); b[i] = 9; });
+    if(this.aim == null) return;
+    const s = this.st, n = s.n, sh = BK_BYKEY[s.queue[0]], y = this.landing(s.board, n, sh, this.aim);
+    if(y < 0) return;
+    const b = s.board.slice(); sh.cells.forEach(([dx,dy])=>{ const i = (y+dy)*n + this.aim+dx; this.cells[i].classList.add("ghost"); b[i] = 9; });
     for(let r=0;r<n;r++){ let f = true; for(let c=0;c<n;c++) if(!b[r*n+c]){ f = false; break; } if(f) for(let c=0;c<n;c++) this.cells[r*n+c].classList.add("clearing"); }
-    for(let c=0;c<n;c++){ let f = true; for(let r=0;r<n;r++) if(!b[r*n+c]){ f = false; break; } if(f) for(let r=0;r<n;r++) this.cells[r*n+c].classList.add("clearing"); }
   },
-  cancel(d){ if(d.el) d.el.remove(); d.slot.classList.remove("lifted"); this.ghost(null); },
-  drop(d){
-    const s = this.st; this.cancel(d);
-    if(d.hold && d.which !== "hold"){ this.toHold(+d.which); return; }
-    if(!d.at){ UL.shake(d.slot); UL.buzz("err"); return; }
-    this.play(d.which, d.at[0], d.at[1]);
+  colAt(clientX){ const s = this.st, sh = BK_BYKEY[s.queue[0]], r = this.board.getBoundingClientRect(), cs = r.width/s.n, w = this.width(sh);
+    return Math.max(0, Math.min(s.n - w, Math.round((clientX - r.left)/cs - w/2))); },
+  bind(){
+    const b = this.board;
+    b.addEventListener("pointerdown", e=>{ if(UL.paused() || this.ending) return; e.preventDefault(); try{ b.setPointerCapture(e.pointerId); }catch(err){}
+      this.pid = e.pointerId; this.aim = this.colAt(e.clientX); this.paintAim(); });
+    b.addEventListener("pointermove", e=>{ if(this.pid !== e.pointerId || this.aim == null) return; const c = this.colAt(e.clientX); if(c !== this.aim){ this.aim = c; this.paintAim(); UL.buzz("tap"); } });
+    b.addEventListener("pointerup", e=>{ if(this.pid !== e.pointerId || this.aim == null) return; this.pid = null; const c = this.aim; this.aim = null; this.play(c); });
+    b.addEventListener("pointercancel", ()=>{ this.pid = null; this.aim = null; this.paintAim(); });
+    if(this.bound) return; this.bound = true;
+    document.addEventListener("keydown", e=>{ if(!this.st || !this.board || UL.paused() || document.activeElement.tagName === "INPUT") return;
+      const s = this.st, w = this.width(BK_BYKEY[s.queue[0]]);
+      if(e.key==="ArrowLeft"||e.key==="ArrowRight"){ e.preventDefault(); this.aim = Math.max(0, Math.min(s.n - w, (this.aim == null ? Math.floor((s.n - w)/2) : this.aim) + (e.key==="ArrowLeft" ? -1 : 1))); this.paintAim(); }
+      else if((e.key===" "||e.key==="ArrowDown"||e.key==="Enter") && this.aim != null){ e.preventDefault(); const c = this.aim; this.aim = null; this.play(c); }
+      else if((e.key==="r"||e.key==="ArrowUp") && s.master){ e.preventDefault(); this.rotateCur(); } });
   },
-  rotateSlot(i){ const s = this.st, k = s.tray[i]; if(!k) return; s.tray[i] = this.rotate(BK_BYKEY[k]).key; UL.buzz("tap"); this.paintTray(); UL.pop(this.tray.querySelector('[data-slot="'+i+'"] .bk-piece')); UL.save(); },
-  toHold(i){ const s = this.st; const k = s.tray[i]; s.tray[i] = s.hold; s.hold = k; UL.buzz("tap");
-    if(s.tray.every(x=>!x)) this.deal(s);
-    this.paintTray(); UL.save(); this.checkEnd(); },
-  /* play the shape in tray slot `which` (or the held shape) with its top-left cell at x, y */
-  play(which, x, y){
+  rotateCur(){ if(UL.paused() || this.ending) return; const s = this.st; s.queue[0] = this.rotate(BK_BYKEY[s.queue[0]]).key; UL.buzz("tap"); this.paintQueue(); this.paintAim(); UL.pop(this.tray.querySelector(".now .bk-piece")); UL.save(); },
+  hold(){ if(UL.paused() || this.ending) return; const s = this.st, k = s.queue[0];
+    if(s.hold){ s.queue[0] = s.hold; } else { s.queue.shift(); this.refill(s); } s.hold = k; UL.buzz("tap"); this.paintQueue(); this.paintAim(); UL.save(); this.checkEnd(); },
+  /* drop the current shape into column x, with a short fall */
+  play(x){
     if(UL.paused() || this.ending) return false;
-    const s = this.st, key = which==="hold" ? s.hold : s.tray[+which]; if(!key) return false;
-    const res = this.place(s, key, x, y); if(!res) return false;
-    if(which==="hold") s.hold = null; else s.tray[+which] = null;
+    const s = this.st, key = s.queue[0], sh = BK_BYKEY[key];
+    const res = this.drop(s, x);
+    if(!res){ UL.shake(this.board); UL.buzz("err"); this.paintAim(); return false; }
     UL.addScore(res.points);
-    this.paintBoard();
-    res.placed.forEach(i=>{ if(!res.cleared.includes(i)) UL.pop(this.cells[i]); });
-    UL.buzz(res.lines ? "act" : "tap");
-    if(res.lines){
-      const order = res.cleared.slice().sort((a,b)=>a-b).map(i=>this.cells[i]); order.forEach(c=>c.classList.add("bk-gone"));
-      setTimeout(()=>order.forEach(c=>c.classList.remove("bk-gone")), 260);
-      UL.sweep(order, Math.min(18, 240/order.length));
-      const mid = this.cells[res.cleared[Math.floor(res.cleared.length/2)]];
+    // the fall: a copy of the shape slides down from the top to where it landed (transform only, under 250ms)
+    const anchor = this.cells[res.y*s.n + x], cw = anchor.offsetWidth, step = (this.cells[1].offsetLeft - this.cells[0].offsetLeft) || cw;
+    const fall = this.piece(key); fall.classList.add("bk-fall"); fall.style.setProperty("--cs", cw+"px"); fall.style.gap = (step - cw)+"px";
+    fall.style.left = anchor.offsetLeft+"px"; fall.style.top = anchor.offsetTop+"px"; fall.style.setProperty("--from", (-(res.y + this.height(sh))*step)+"px");
+    fall.style.animationDuration = Math.min(240, 90 + res.y*18)+"ms"; this.board.appendChild(fall);
+    const done = () => { fall.remove(); this.paintBoard();
+      if(!res.lines) res.placed.forEach(i=>UL.pop(this.cells[i]));
+      this.cells.forEach(c=>c.classList.remove("bk-gone"));
+    };
+    if(res.lines){                                     // flash the full rows before they clear
+      const before = this.cells; res.rows.forEach(r=>{ for(let c=0;c<s.n;c++){ const cell = before[r*s.n+c]; cell.className = "bk-cell on f"+sh.fam+" bk-gone"; } });
+      UL.sweep(res.rows.flatMap(r=>[...Array(s.n).keys()].map(c=>before[r*s.n+c])), Math.min(18, 200/(res.rows.length*s.n)));
+      const mid = before[res.rows[0]*s.n + Math.floor(s.n/2)];
       const tier = (res.streak >= 5 || res.lines >= 4 || res.empty) ? 4 : res.lines >= 3 ? 3 : res.lines === 2 ? 2 : 1;
       UL.praise(mid, tier);
     }
-    if(s.tray.every(k=>!k)) this.deal(s);
-    this.paintTray(); this.hud(); UL.save();
-    this.checkEnd();
+    setTimeout(done, res.lines ? 240 : Math.min(240, 90 + res.y*18));
+    UL.buzz(res.lines ? "act" : "tap");
+    this.paintQueue(); this.hud(); UL.save();
+    setTimeout(()=>this.checkEnd(), res.lines ? 260 : 120);
     return true;
   },
   checkEnd(){
-    const s = this.st;
+    const s = this.st; if(this.ending) return;
     if(s.limit && s.placed >= s.limit) return this.finish("30 shapes placed");
-    if(!this.canPlay(s)) return this.finish("No shape fits");
+    if(!this.canPlay(s)) return this.finish("No room for the next shape");
   },
   finish(why){
     if(this.ending) return; this.ending = true;
     const s = this.st, sc = UL.cur.score, best = this.best(), pb = sc > best;
     if(pb){ UL.setKv("best_"+this.lvl.id, sc); UL.milestone(this.board, "New best!"); }
     this.hud();
-    setTimeout(()=>UL.end({won:true, title: pb ? "New best" : "Well played", line: why+" · "+s.lines+" line"+(s.lines===1?"":"s")+" cleared"}), 450);
+    setTimeout(()=>UL.end({won:true, title: pb ? "New best" : "Well played", line: why+" · "+s.lines+" row"+(s.lines===1?"":"s")+" cleared"}), 450);
   },
-  onPause(){ if(this.drag){ this.cancel(this.drag); this.drag = null; } },
-  onPro(){ if(this.tray) this.paintTray(); }
+  onPause(){ this.aim = null; this.pid = null; if(this.board) this.paintAim(); },
+  onPro(){ if(this.tray) this.paintQueue(); }
 };
 /* ==== GAME END ==== */
 
