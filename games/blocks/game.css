@@ -15,18 +15,21 @@
 .bk-cell.clearing.on{background:color-mix(in srgb, var(--gold) 45%, var(--cellbg))}
 .bk-cell.bk-gone::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--gold);animation:bk-gone .24s ease-out forwards}
 @keyframes bk-gone{from{opacity:.95;transform:scale(1)}to{opacity:0;transform:scale(.35)}}
-/* the tray under the board */
-.bk-tray{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;touch-action:none}
-.bk-tray.master{grid-template-columns:repeat(3,1fr) .75fr}
-.bk-slot{position:relative;height:132px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);
-  border-radius:calc(var(--radius) + 4px);background:var(--cellbg);touch-action:none;cursor:grab}
-.bk-slot.hold{border-style:dashed}
-.bk-slot.hold small{position:absolute;top:4px;left:0;right:0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--muted)}
-.bk-slot.nofit .bk-piece{opacity:.3}
-.bk-slot.lifted .bk-piece{opacity:.15}
-.bk-piece{--cs:23px;display:grid;grid-template-columns:repeat(var(--w),var(--cs));grid-template-rows:repeat(var(--h),var(--cs));gap:2px;pointer-events:none}
+/* the queue under the board: the shape to drop now, and the next ones */
+.bk-queue{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:6px;margin-top:6px}
+.bk-queue:has(.hold){grid-template-columns:1.4fr 1fr 1fr 1fr}
+.bk-q{position:relative;height:118px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:calc(var(--radius) + 4px);background:var(--cellbg)}
+.bk-q.now{border:2px solid var(--gold-deep)}
+.bk-q.hold{border-style:dashed}
+.bk-q small{position:absolute;top:5px;left:0;right:0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--muted)}
+.bk-q.now small{color:var(--gold-deep);font-weight:700}
+.bk-piece{--cs:15px;display:grid;grid-template-columns:repeat(var(--w),var(--cs));grid-template-rows:repeat(var(--h),var(--cs));gap:2px;pointer-events:none;margin-top:10px}
+.bk-q.now .bk-piece{--cs:21px}
 .bk-piece i{border-radius:calc(var(--radius) + 2px)}
-.bk-float{position:fixed;left:0;top:0;z-index:60;gap:3px;filter:drop-shadow(0 6px 10px color-mix(in srgb, var(--ink) 35%, transparent))}
-@media (max-height:800px){.bk-slot{height:112px}.bk-piece{--cs:19px}}
-@media (max-height:700px){.bk-slot{height:92px}.bk-piece{--cs:16px}}
-@media (prefers-reduced-motion: reduce){.bk-cell.bk-gone::after{animation-duration:.01s}}
+.bk-board{touch-action:none;cursor:pointer}
+/* the falling shape */
+.bk-fall{position:absolute;z-index:4;margin:0;gap:3px;animation:bk-fall linear both}
+@keyframes bk-fall{from{transform:translateY(var(--from))}to{transform:translateY(0)}}
+@media (max-height:760px){.bk-q{height:96px}.bk-q.now .bk-piece{--cs:17px}.bk-piece{--cs:12px}}
+@media (max-height:660px){.bk-q{height:82px}.bk-q.now .bk-piece{--cs:14px}.bk-piece{--cs:10px}}
+@media (prefers-reduced-motion: reduce){.bk-cell.bk-gone::after,.bk-fall{animation-duration:.01s !important}}
