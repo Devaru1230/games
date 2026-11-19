@@ -70,13 +70,14 @@ h1 span{color:var(--gold)}
 <script>
 /* One line per game. Newest first. status: "new" | "live" | "soon" */
 const GAMES = [
-  {name:"Pairs",  blurb:"Turn two cards, find every pair.",         url:"pairs/",  status:"new"},
+  {name:"Picture Grid", blurb:"Number clues reveal a picture.",     url:"grid/",   status:"new"},
+  {name:"Pairs",  blurb:"Turn two cards, find every pair.",         url:"pairs/",  status:"live"},
   {name:"Blocks", blurb:"Tap a column, the shape drops in. Clear rows.", url:"blocks/", status:"live"},
   {name:"Colour Sort", blurb:"Pour until every tube is one colour.",  url:"sort/",   status:"live"},
   {name:"Mines",  blurb:"One tap opens half the board.",            url:"mines/",  status:"live"},
   {name:"Twos",   blurb:"Drag a number onto its twin. Merge and double.", url:"twos/", status:"live"},
   {name:"Sudoku", blurb:"Four levels, a Daily, lightning mode.",    url:"../adfreesudoku/", status:"live"},
-  {name:"Picture Grid", blurb:"Next week.",                         url:"#",       status:"soon"}
+  {name:"Solitaire", blurb:"Next week.",                            url:"#",       status:"soon"}
 ];
 const FAMILY_HASH = "fc0b91ea84d8294bbaacbaf19726c66b726bd75bb28d8acf3cd7e9646d3e2efc";  /* SHA-256 of the family key; the key itself is not stored here */
 function ulHash(s){const K=[],H=[1779033703,-1150833019,1013904242,-1521486534,1359893119,-1694144372,528734635,1541459225];
