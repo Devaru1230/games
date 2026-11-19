@@ -43,3 +43,13 @@
 .tw-hint svg{display:block;margin:6px auto 4px;width:64px;height:64px}
 .tw-hint svg path{fill:none;stroke:var(--gold);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
 @media (prefers-reduced-motion: reduce){.tw-tile{transition-duration:.01s}.tw-face.tw-new{animation-duration:.01s;animation-delay:0s}}
+
+/* 2.0: drag a tile onto its twin */
+.tw-tile{transition:transform .18s ease-out, opacity .18s ease-out;touch-action:none;cursor:grab}
+.tw-tile.sel .tw-face{box-shadow:0 0 0 3px var(--ink), inset 0 calc(var(--w) * -.07) 0 var(--tw-shade)}
+.tw-tile.twin .tw-face{box-shadow:0 0 0 3px var(--gold), 0 0 14px var(--gold), inset 0 calc(var(--w) * -.07) 0 var(--tw-shade)}
+.tw-tile.lift{transition:none;z-index:6}
+.tw-tile.lift .tw-face{transform:scale(1.07)}
+.tw-tile.gone{opacity:0;z-index:1}
+.tw-board{touch-action:none}
+@media (prefers-reduced-motion: reduce){.tw-tile{transition-duration:.01s}}
